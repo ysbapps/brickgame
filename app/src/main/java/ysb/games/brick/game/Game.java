@@ -254,6 +254,7 @@ public class Game extends Thread
       message = "Level " + level;
     else
     {
+
 //      state = STATE_NO_MORE_LEVELS;
 //              tetris.updateScores("", score, true);
     }
