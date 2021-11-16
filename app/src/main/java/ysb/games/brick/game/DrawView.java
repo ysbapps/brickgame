@@ -48,6 +48,7 @@ public class DrawView extends View
   private void initialize(Canvas canvas)
   {
     bounds = canvas.getClipBounds();
+    System.out.println("bounds: "+bounds);
     offsets = new Rect(100, 100, 100, 0);
     vertical = bounds.width() < bounds.height();
     if (vertical)

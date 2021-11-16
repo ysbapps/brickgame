@@ -147,7 +147,7 @@ public class Game extends Thread
 
   public void pause()
   {
-    if (state == STATE_PAUSED)
+    if (state != STATE_GAME)
       return;
 
     state = STATE_PAUSED;
