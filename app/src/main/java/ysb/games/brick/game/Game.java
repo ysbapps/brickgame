@@ -96,7 +96,7 @@ public class Game extends Thread
           int delay = 800 - speed() * 50;    // 750 -> 300 (at speed 10) -> 0 (at speed 16)
           while (delay-- > 0 && state == STATE_GAME && isAlive)
           {
-            sleep(1);
+            sleepMs(1);
             if (delay == 100 * (int) (delay / 100.0))
               repaint();
           }
@@ -286,7 +286,7 @@ public class Game extends Thread
 
   long time()
   {
-    if (state == STATE_PAUSED)
+    if (state != STATE_GAME)
       return lastActionTime - levelStarted - wasOnPause;
     else
       return System.currentTimeMillis() - levelStarted - wasOnPause;

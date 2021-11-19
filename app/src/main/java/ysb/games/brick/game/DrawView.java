@@ -17,7 +17,6 @@ public class DrawView extends View
   private Rect cupRect;
   private float[] cupEdges;
   private Rect startTouch;
-  private Rect quitTouch;
   private Rect pauseTouch;
   private Rect quitGameTouch;
 
@@ -51,7 +50,6 @@ public class DrawView extends View
     int cx = bounds.centerX() - cw / 2;
     int cy = bounds.bottom - 30 * ch / 9;
     startTouch = new Rect(cx, cy, cx + cw, cy + ch);
-    quitTouch = new Rect(cx, cy + 3 * ch / 2, cx + cw, cy + 3 * ch / 2 + ch);
 
     float maxSquareW = (bounds.width() - offsets.left - offsets.right) / (float) Cup.W;
     float maxSquareH = (bounds.height() - offsets.top - offsets.bottom) / (float) Cup.H;
@@ -90,12 +88,7 @@ public class DrawView extends View
     {
       if (startTouch.contains(x, y))
         game.newGame();
-      else if (quitTouch.contains(x, y))
-      {
-        game.isAlive = false;
-        android.os.Process.killProcess(android.os.Process.myPid());
-        System.exit(1);
-      }
+
       performClick();
     }
     else    // game is started
@@ -191,7 +184,7 @@ public class DrawView extends View
     paints.text.setTextSize(100);
     paints.text.setColor(paints.controlColor);
     paints.text.setTextAlign(Paint.Align.CENTER);
-    for (Rect rect : new Rect[]{startTouch, quitTouch})
+    for (Rect rect : new Rect[]{startTouch})
     {
       paints.control.setColor(paints.controlColor);
       paints.control.setStyle(Paint.Style.STROKE);
@@ -218,7 +211,6 @@ public class DrawView extends View
     paints.text.setColor(paints.controlColor);
     float lx = cupRect.left - 100;
     float rx = cupRect.right + 100;
-    float sy = cupRect.top + (float) cupRect.height() / 2;
     canvas.drawText("next", lx, cupRect.top + 30, paints.text);
     canvas.drawText("level", lx, cupRect.top + 280, paints.text);
     canvas.drawText("time", rx, cupRect.top + 30, paints.text);
