@@ -21,6 +21,7 @@ public class DrawView extends View
   private Rect quitGameTouch;
 
   private Paints paints;
+  private float dk;
 
   private final Touch touch = new Touch();
 
@@ -43,7 +44,10 @@ public class DrawView extends View
   {
     bounds = canvas.getClipBounds();
     System.out.println("bounds: " + bounds);
-    offsets = new Rect(150, 200, 150, 50);
+    float dw = bounds.width() / 1000f;
+    float dh = bounds.height() / 2000f;
+    offsets = new Rect(Math.round(150 * dw), Math.round(200 * dh), Math.round(150 * dw), Math.round(50 * dh));
+    System.out.println("offsets: " + offsets);
 
     int cw = bounds.width() / 2;
     int ch = bounds.height() / 12;
@@ -54,6 +58,8 @@ public class DrawView extends View
     float maxSquareW = (bounds.width() - offsets.left - offsets.right) / (float) Cup.W;
     float maxSquareH = (bounds.height() - offsets.top - offsets.bottom) / (float) Cup.H;
     cupSquare = Math.min(maxSquareW, maxSquareH);
+    dk = cupSquare / 64;  // display coeff for smaller screens
+    System.out.println("cupSquare, dk: " + cupSquare + ", " + dk);
 
     cupRect = new Rect(Math.round(bounds.centerX() - Cup.W * cupSquare / 2), offsets.top,
         Math.round(bounds.centerX() + Cup.W * cupSquare / 2), offsets.top + Math.round(Cup.H * cupSquare));
@@ -64,7 +70,8 @@ public class DrawView extends View
         cupRect.right + cupEdgeWidth / 2, cupRect.bottom + cupEdgeWidth, cupRect.right + cupEdgeWidth / 2, cupRect.top};
 
     int pauseSquare = Math.min(cupRect.left, 200);
-    pauseTouch = new Rect(0, 0, pauseSquare, pauseSquare);
+    int sx = cupRect.left - offsets.left;
+    pauseTouch = new Rect(sx, 0, sx + pauseSquare, pauseSquare);
     quitGameTouch = new Rect(pauseTouch.right, 0, pauseTouch.right + pauseSquare, pauseSquare);
 
     paints = new Paints(cupEdgeWidth);
@@ -161,7 +168,7 @@ public class DrawView extends View
     int scoreSize = game.scores.scoreTable.size();
     if (scoreSize > 0)
     {
-      paints.text.setTextSize(40);
+      paints.text.setTextSize(40 * dk);
       paints.text.setColor(paints.controlColor);
       float sx1 = bounds.centerX() - 100;
       float sx2 = bounds.centerX() + 100;
@@ -169,19 +176,19 @@ public class DrawView extends View
       canvas.drawText("best score", sx1, offsets.top, paints.text);
       paints.text.setTextAlign(Paint.Align.LEFT);
       canvas.drawText("best level", sx2, offsets.top, paints.text);
-      paints.text.setTextSize(60);
+      paints.text.setTextSize(60 * dk);
       for (int i = 0; i < scoreSize; i++)
       {
         paints.text.setColor(Color.rgb(255, i * 255 / scoreSize, i * 255 / scoreSize));
         paints.text.setTextAlign(Paint.Align.RIGHT);
-        int y = (i + 1) * 80;
+        int y = Math.round((i + 1) * 80 * dk);
         canvas.drawText("" + game.scores.scoreTable.get(i), sx1, offsets.top + y, paints.text);
         paints.text.setTextAlign(Paint.Align.LEFT);
         canvas.drawText("" + game.scores.levelTable.get(i), sx2, offsets.top + y, paints.text);
       }
     }
 
-    paints.text.setTextSize(100);
+    paints.text.setTextSize(100 * dk);
     paints.text.setColor(paints.controlColor);
     paints.text.setTextAlign(Paint.Align.CENTER);
     for (Rect rect : new Rect[]{startTouch})
@@ -206,37 +213,37 @@ public class DrawView extends View
 
   private void drawGameInfo(Canvas canvas)
   {
-    paints.text.setTextSize(30);
+    paints.text.setTextSize(30 * dk);
     paints.text.setTextAlign(Paint.Align.CENTER);
     paints.text.setColor(paints.controlColor);
-    float lx = cupRect.left - 90;
-    float rx = cupRect.right + 90;
-    canvas.drawText("next", lx, cupRect.top + 30, paints.text);
-    canvas.drawText("level", lx, cupRect.top + 280, paints.text);
-    canvas.drawText("time", rx, cupRect.top + 30, paints.text);
-    canvas.drawText("speed", rx, cupRect.top + 280, paints.text);
-    canvas.drawText("score", rx, 50, paints.text);
-    paints.text.setTextSize(120);
-    canvas.drawText("" + game.level, lx, cupRect.top + 400, paints.text);
-    paints.text.setTextSize(40);
+    float lx = cupRect.left - 90 * dk;
+    float rx = cupRect.right + 90 * dk;
+    canvas.drawText("next", lx, cupRect.top + 30 * dk, paints.text);
+    canvas.drawText("level", lx, cupRect.top + 280 * dk, paints.text);
+    canvas.drawText("time", rx, cupRect.top + 30 * dk, paints.text);
+    canvas.drawText("speed", rx, cupRect.top + 280 * dk, paints.text);
+    canvas.drawText("score", rx, 50 * dk, paints.text);
+    paints.text.setTextSize(120 * dk);
+    canvas.drawText("" + game.level, lx, cupRect.top + 400 * dk, paints.text);
+    paints.text.setTextSize(40 * dk);
     long time = game.time() / 1000;
     String min = "0" + time / 60;
     String sec = "0" + time % 60;
-    canvas.drawText(min.substring(min.length() - 2) + ":" + sec.substring(sec.length() - 2), rx, cupRect.top + 90, paints.text);
-    paints.text.setTextSize(60);
-    canvas.drawText("" + game.speed(), rx, cupRect.top + 350, paints.text);
+    canvas.drawText(min.substring(min.length() - 2) + ":" + sec.substring(sec.length() - 2), rx, cupRect.top + 90 * dk, paints.text);
+    paints.text.setTextSize(60 * dk);
+    canvas.drawText("" + game.speed(), rx, cupRect.top + 350 * dk, paints.text);
 
     if (game.message != null)
     {
       paints.text.setColor(Color.RED);
-      paints.text.setTextSize(100);
+      paints.text.setTextSize(100 * dk);
       canvas.drawText("" + game.message, cupRect.centerX(), cupRect.centerY(), paints.text);
     }
 
-    paints.text.setTextSize(70);
+    paints.text.setTextSize(70 * dk);
     paints.text.setColor(Color.RED);
     paints.text.setTextAlign(Paint.Align.RIGHT);
-    canvas.drawText("" + game.score, cupRect.right + 140, 130, paints.text);
+    canvas.drawText("" + game.score, cupRect.right + 140 * dk, 130 * dk, paints.text);
     if (game.prize > 0 && game.currentFigure != null)
     {
       paints.text.setTextAlign(Paint.Align.CENTER);
@@ -284,8 +291,8 @@ public class DrawView extends View
   private void drawNextFigureSquare(Canvas canvas, int x, int y, byte alignShift)    // draw next figure cupSquare
   {
     long square = Math.round(offsets.left / 4.2);
-    float sx = cupRect.left - 24 - 4 * square + alignShift * 0.5f * square;
-    float sy = cupRect.top + 30;
+    float sx = cupRect.left - 24 * dk - 4 * square + alignShift * 0.5f * square;
+    float sy = cupRect.top + 30 * dk;
     canvas.drawRect(sx + x * square, sy + y * square, sx + (x + 1) * square, sy + (y + 1) * square, paints.cupContents);
   }
 
