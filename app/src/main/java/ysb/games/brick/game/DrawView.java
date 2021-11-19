@@ -7,6 +7,8 @@ import android.view.View;
 
 import java.util.HashMap;
 
+import ysb.games.brick.R;
+
 public class DrawView extends View
 {
   Game game = null;
@@ -33,11 +35,21 @@ public class DrawView extends View
   public static String info = "";
   public static HashMap<Integer, Integer> figures = new HashMap<>();
 
+  Bitmap bg;
+
 
   public DrawView(Context context)
   {
     super(context);
     System.out.println("View created");
+
+    BitmapFactory.Options options = new BitmapFactory.Options();
+//    options.outWidth = 826;
+//    options.outHeight = 1264;
+    options.inSampleSize = 2;
+    options.inJustDecodeBounds = false;
+    bg = BitmapFactory.decodeResource(getResources(), R.drawable.bg, options);
+    System.out.println("bg: " + bg.getWidth() + 'x' + bg.getHeight());
   }
 
   private void initialize(Canvas canvas)
@@ -142,6 +154,9 @@ public class DrawView extends View
       initialize(canvas);
 
     canvas.drawColor(Color.BLACK);
+    int bx = bounds.width() > 826 ? (bounds.width() - 826) / 4 : 0;
+    int by = bounds.height() > 1264 ? (bounds.height() - 1264) / 4 : 0;
+    canvas.drawBitmap(bg, bx, by, paints.cupContents);
 
     if (game.state == Game.STATE_NOT_STARTED)
     {
@@ -170,8 +185,8 @@ public class DrawView extends View
     {
       paints.text.setTextSize(40 * dk);
       paints.text.setColor(paints.controlColor);
-      float sx1 = bounds.centerX() - 100;
-      float sx2 = bounds.centerX() + 100;
+      float sx1 = bounds.centerX() - 100 * dk;
+      float sx2 = bounds.centerX() + 100 * dk;
       paints.text.setTextAlign(Paint.Align.RIGHT);
       canvas.drawText("best score", sx1, offsets.top, paints.text);
       paints.text.setTextAlign(Paint.Align.LEFT);
@@ -188,7 +203,7 @@ public class DrawView extends View
       }
     }
 
-    paints.text.setTextSize(100 * dk);
+    paints.text.setTextSize(60 * dk);
     paints.text.setColor(paints.controlColor);
     paints.text.setTextAlign(Paint.Align.CENTER);
     for (Rect rect : new Rect[]{startTouch})
@@ -197,16 +212,13 @@ public class DrawView extends View
       paints.control.setStyle(Paint.Style.STROKE);
       paints.control.setStrokeWidth(8);
       float r = (float) rect.height() / 2;
-      canvas.drawCircle(rect.left + r, rect.top + r, r, paints.control);
-      canvas.drawCircle(rect.right - r, rect.top + r, r, paints.control);
-      paints.control.setColor(Color.BLACK);
-      paints.control.setStyle(Paint.Style.FILL);
-      canvas.drawRect(rect.left + r, rect.top, rect.right - r, rect.bottom, paints.control);
+      canvas.drawCircle(rect.left, rect.top + r, r, paints.control);
+      canvas.drawCircle(rect.right, rect.top + r, r, paints.control);
       paints.control.setColor(paints.controlColor);
       paints.control.setStyle(Paint.Style.STROKE);
-      canvas.drawLine(rect.left + r, rect.top, rect.right - r, rect.top, paints.control);
-      canvas.drawLine(rect.left + r, rect.bottom, rect.right - r, rect.bottom, paints.control);
-      canvas.drawText(rect == startTouch ? "START" : "QUIT", rect.centerX(), rect.bottom - r / 2, paints.text);
+      canvas.drawLine(rect.left, rect.top, rect.right, rect.top, paints.control);
+      canvas.drawLine(rect.left, rect.bottom, rect.right, rect.bottom, paints.control);
+      canvas.drawText(rect == startTouch ? "START" : "QUIT", rect.centerX(), rect.top + 90 * dk, paints.text);
     }
 
   }
