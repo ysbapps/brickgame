@@ -209,8 +209,8 @@ public class DrawView extends View
     paints.text.setTextSize(30);
     paints.text.setTextAlign(Paint.Align.CENTER);
     paints.text.setColor(paints.controlColor);
-    float lx = cupRect.left - 100;
-    float rx = cupRect.right + 100;
+    float lx = cupRect.left - 90;
+    float rx = cupRect.right + 90;
     canvas.drawText("next", lx, cupRect.top + 30, paints.text);
     canvas.drawText("level", lx, cupRect.top + 280, paints.text);
     canvas.drawText("time", rx, cupRect.top + 30, paints.text);
@@ -283,8 +283,8 @@ public class DrawView extends View
 
   private void drawNextFigureSquare(Canvas canvas, int x, int y, byte alignShift)    // draw next figure cupSquare
   {
-    int square = offsets.left / 4;
-    float sx = cupRect.left - 30 - 4 * square + alignShift * 0.5f * square;
+    long square = Math.round(offsets.left / 4.2);
+    float sx = cupRect.left - 24 - 4 * square + alignShift * 0.5f * square;
     float sy = cupRect.top + 30;
     canvas.drawRect(sx + x * square, sy + y * square, sx + (x + 1) * square, sy + (y + 1) * square, paints.cupContents);
   }
