@@ -16,7 +16,7 @@ class Figure
   final static int SIZE = 4;   // figure width/height
   private final static Point START_POS = new Point(3, -2);
 
-  private static int[] lastFigures = new int[2];
+  private static final int[] lastFigures = new int[2];
   int type;
   private boolean[][][] contents;    // [rotation][y][x]
   private int rotation = 0;
@@ -44,16 +44,16 @@ class Figure
 
   void rotate()
   {
-    rotation++;
-    if (rotation > 3)
-      rotation = 0;
+    rotation--;
+    if (rotation < 0)
+      rotation = 3;
   }
 
   void rotateBack()
   {
-    rotation--;
-    if (rotation < 0)
-      rotation = 3;
+    rotation++;
+    if (rotation > 3)
+      rotation = 0;
   }
 
   private void createContents()
@@ -63,82 +63,82 @@ class Figure
     {
       case TYPE_LSTAIR:
         contents[0][1][2] = contents[0][1][3] =                     //  xx
-          contents[0][2][1] = contents[0][2][2] = true;            // xx
+            contents[0][2][1] = contents[0][2][2] = true;            // xx
 
         contents[1][1][1] =                                              // x
-          contents[1][2][1] = contents[1][2][2] =                // xx
-            contents[1][3][2] = true;                                      //  x
+            contents[1][2][1] = contents[1][2][2] =                // xx
+                contents[1][3][2] = true;                                      //  x
 
         contents[2][1][2] = contents[2][1][3] =                //  xx
-          contents[2][2][1] = contents[2][2][2] = true;            // xx
+            contents[2][2][1] = contents[2][2][2] = true;            // xx
 
         contents[3][1][1] =                                          // x
-          contents[3][2][1] = contents[3][2][2] =                // xx
-            contents[3][3][2] = true;                                    //  x
+            contents[3][2][1] = contents[3][2][2] =                // xx
+                contents[3][3][2] = true;                                    //  x
         break;
 
       case TYPE_RSTAIR:
         contents[0][1][0] = contents[0][1][1] =                // xx
-          contents[0][2][1] = contents[0][2][2] = true;            //  xx
+            contents[0][2][1] = contents[0][2][2] = true;            //  xx
 
         contents[1][1][2] =                                          //  x
-          contents[1][2][1] = contents[1][2][2] =                // xx
-            contents[1][3][1] = true;                                    // x
+            contents[1][2][1] = contents[1][2][2] =                // xx
+                contents[1][3][1] = true;                                    // x
 
         contents[2][1][0] = contents[2][1][1] =                // xx
-          contents[2][2][1] = contents[2][2][2] = true;            //  xx
+            contents[2][2][1] = contents[2][2][2] = true;            //  xx
 
         contents[3][1][2] =                                          //  x
-          contents[3][2][1] = contents[3][2][2] =                // xx
-            contents[3][3][1] = true;                                    // x
+            contents[3][2][1] = contents[3][2][2] =                // xx
+                contents[3][3][1] = true;                                    // x
         break;
 
       case TYPE_PODIUM:
         contents[0][1][2] =                                          //   x
-          contents[0][2][1] = contents[0][2][2] =                //  xx
-            contents[0][3][2] = true;                                    //   x
+            contents[0][2][1] = contents[0][2][2] =                //  xx
+                contents[0][3][2] = true;                                    //   x
 
         contents[1][1][1] =                                                              //  x
-          contents[1][2][0] = contents[1][2][1] = contents[1][2][2] = true;      // xxx
+            contents[1][2][0] = contents[1][2][1] = contents[1][2][2] = true;      // xxx
 
         contents[2][1][1] =                                          //  x
-          contents[2][2][1] = contents[2][2][2] =                //  xx
-            contents[2][3][1] = true;                                    //  x
+            contents[2][2][1] = contents[2][2][2] =                //  xx
+                contents[2][3][1] = true;                                    //  x
 
         contents[3][1][0] = contents[3][1][1] = contents[3][1][2] =            // xxx
-          contents[3][2][1] = true;                                                        //  x
+            contents[3][2][1] = true;                                                        //  x
         break;
 
       case TYPE_LCORNER:
         contents[0][1][1] = contents[0][1][2] =                //  xx
-          contents[0][2][2] =                                          //   x
-            contents[0][3][2] = true;                                    //   x
+            contents[0][2][2] =                                          //   x
+                contents[0][3][2] = true;                                    //   x
 
         contents[1][1][2] =                                                              //   x
-          contents[1][2][0] = contents[1][2][1] = contents[1][2][2] = true;      // xxx
+            contents[1][2][0] = contents[1][2][1] = contents[1][2][2] = true;      // xxx
 
         contents[2][1][1] =                                          //  x
-          contents[2][2][1] =                                          //  x
-            contents[2][3][1] = contents[2][3][2] = true;            //  xx
+            contents[2][2][1] =                                          //  x
+                contents[2][3][1] = contents[2][3][2] = true;            //  xx
 
         contents[3][1][0] = contents[3][1][1] = contents[3][1][2] =            // xxx
-          contents[3][2][0] = true;                                                        // x
+            contents[3][2][0] = true;                                                        // x
         break;
 
       case TYPE_RCORNER:
         contents[0][1][1] = contents[0][1][2] =                //  xx
-          contents[0][2][1] =                                          //  x
-            contents[0][3][1] = true;                                    //  x
+            contents[0][2][1] =                                          //  x
+                contents[0][3][1] = true;                                    //  x
 
         contents[1][1][0] = contents[1][1][1] = contents[1][1][2] =            // xxx
-          contents[1][2][2] = true;                                                        //   x
+            contents[1][2][2] = true;                                                        //   x
 
         contents[2][1][2] =                                          //   x
-          contents[2][2][2] =                                          //   x
-            contents[2][3][1] = contents[2][3][2] = true;            //  xx
+            contents[2][2][2] =                                          //   x
+                contents[2][3][1] = contents[2][3][2] = true;            //  xx
 
         contents[3][1][0] =                                                              // x
-          contents[3][2][0] = contents[3][2][1] = contents[3][2][2] = true;      // xxx
+            contents[3][2][0] = contents[3][2][1] = contents[3][2][2] = true;      // xxx
         break;
 
       case TYPE_SQUARE:

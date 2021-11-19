@@ -10,7 +10,7 @@ public class Touch
   final static int ACTION_MOVE = 2;
   final static int ACTION_UP = 3;
 
-//  final static int DIR_UP = 0;
+  final static int DIR_UP = 0;
   final static int DIR_RIGHT = 1;
   final static int DIR_DOWN = 2;
   final static int DIR_LEFT = 3;

@@ -20,9 +20,6 @@ public class DrawView extends View
   private Rect quitTouch;
   private Rect pauseTouch;
   private Rect quitGameTouch;
-  private Rect leftTouch;
-  private Rect rotateTouch;
-  private Rect rightTouch;
 
   private Paints paints;
 
@@ -47,8 +44,7 @@ public class DrawView extends View
   {
     bounds = canvas.getClipBounds();
     System.out.println("bounds: " + bounds);
-    offsets = new Rect(100, 100, 100, 200);
-    offsets.bottom = 200;
+    offsets = new Rect(150, 200, 150, 50);
 
     int cw = bounds.width() / 2;
     int ch = bounds.height() / 12;
@@ -72,12 +68,6 @@ public class DrawView extends View
     int pauseSquare = Math.min(cupRect.left, 200);
     pauseTouch = new Rect(0, 0, pauseSquare, pauseSquare);
     quitGameTouch = new Rect(pauseTouch.right, 0, pauseTouch.right + pauseSquare, pauseSquare);
-    int y = cupRect.bottom;
-    int w = bounds.width() / 3;
-    int h = bounds.bottom - y;
-    leftTouch = new Rect(0, y, w, y + h);
-    rotateTouch = new Rect(w, y, 2 * w, y + h);
-    rightTouch = new Rect(2 * w, y, 3 * w, y + h);
 
     paints = new Paints(cupEdgeWidth);
   }
@@ -96,9 +86,6 @@ public class DrawView extends View
     touch.onEvent(evt);
     int x = touch.x;
     int y = touch.y;
-    int dx = Math.round(touch.down.x);
-    int dy = Math.round(touch.down.y);
-    int slideDist = 100;
     if (game.state == Game.STATE_NOT_STARTED && touch.action == Touch.ACTION_UP)
     {
       if (startTouch.contains(x, y))
@@ -113,34 +100,34 @@ public class DrawView extends View
     }
     else    // game is started
     {
-      if (touch.action == Touch.ACTION_DOWN)
+      if (touch.action == Touch.ACTION_MOVE && touch.dist > 100)   // slide
       {
-        if (leftTouch.contains(x, y))
+        if (touch.dir == Touch.DIR_LEFT && bounds.contains(x, y))    // touch down and touch move belong to the control rect
           game.action(Game.MOVE_LEFT);
-        else if (rightTouch.contains(x, y))
-          game.action(Game.MOVE_RIGHT);
-        else if (rotateTouch.contains(x, y) && touch.dist < slideDist)
-          game.action(Game.ROTATE);
-        else if (pauseTouch.contains(x, y))
-        {
-          if (game.state == Game.STATE_GAME)
-            game.pause();
-          else if (game.state == Game.STATE_PAUSED)
-            game.resumeFromPause();
-        }
-        else if (quitGameTouch.contains(x, y))
-          game.quitToLandingPage();
-      }
-      else if (touch.action == Touch.ACTION_MOVE && touch.dist > slideDist)   // slide
-      {
-        if (touch.dir == Touch.DIR_LEFT && leftTouch.contains(x, y) && leftTouch.contains(dx, dy))    // touch down and touch move belong to the control rect
-          game.action(Game.MOVE_LEFT);
-        else if (touch.dir == Touch.DIR_RIGHT && rightTouch.contains(x, y) && rightTouch.contains(dx, dy))
+        else if (touch.dir == Touch.DIR_RIGHT && bounds.contains(x, y))
           game.action(Game.MOVE_RIGHT);
       }
       else if (touch.action == Touch.ACTION_UP)
       {
-        if (touch.dir == Touch.DIR_DOWN && touch.dist > slideDist && dy < cupRect.bottom)
+        if (touch.dist < 30)   // click
+        {
+          if (touch.y > cupRect.top && touch.x < bounds.width() / 2)
+            game.action(Game.MOVE_LEFT);
+          else if (touch.y > cupRect.top && touch.x > bounds.width() / 2)
+            game.action(Game.MOVE_RIGHT);
+          else if (pauseTouch.contains(x, y))
+          {
+            if (game.state == Game.STATE_GAME)
+              game.pause();
+            else if (game.state == Game.STATE_PAUSED)
+              game.resumeFromPause();
+          }
+          else if (quitGameTouch.contains(x, y))
+            game.quitToStartPage();
+        }
+        else if (bounds.contains(x, y) && touch.dist > 50 && touch.dir == Touch.DIR_UP)
+          game.action(Game.ROTATE);
+        else if (bounds.contains(x, y) && touch.dist > 200 && touch.dir == Touch.DIR_DOWN)
           game.action(Game.DROP);
       }
     }
@@ -162,18 +149,18 @@ public class DrawView extends View
     }
     else    // game in progress
     {
-      if (game.state == Game.STATE_GAME)
-        drawGameControls(canvas);
+//      if (game.state == Game.STATE_GAME)
+//        drawGameControls(canvas);
 
       drawGeneralControls(canvas);
       drawCup(canvas);
       drawGameInfo(canvas);
     }
 
-//      canvas.drawRect(cupRect.right, cupRect.top - 100, bounds.right, cupRect.top, paints.debugLine);
-//      for (Rect r : new Rect[]{pauseTouch, quitGameTouch, leftTouch, rotateTouch, rightTouch})
-//        canvas.drawRect(r, paints.debugLine);
-//      drawDebugInfo(canvas);
+//    canvas.drawRect(cupRect.right, cupRect.top - 100, bounds.right, cupRect.top, paints.debugLine);
+//    for (Rect r : new Rect[]{pauseTouch, quitGameTouch, leftTouch, rightTouch, rotateTouch})
+//      canvas.drawRect(r, paints.debugLine);
+//    drawDebugInfo(canvas);
   }
 
   private void drawStartPage(Canvas canvas)
@@ -229,23 +216,23 @@ public class DrawView extends View
     paints.text.setTextSize(30);
     paints.text.setTextAlign(Paint.Align.CENTER);
     paints.text.setColor(paints.controlColor);
-    float sx1 = cupRect.left - offsets.left;
-    float sx2 = cupRect.right + offsets.right;
+    float lx = cupRect.left - 100;
+    float rx = cupRect.right + 100;
     float sy = cupRect.top + (float) cupRect.height() / 2;
-    canvas.drawText("next", sx1, cupRect.top + 180, paints.text);
-    canvas.drawText("level", sx1, sy - 120, paints.text);
-    canvas.drawText("time", sx2, sy - 320, paints.text);
-    canvas.drawText("speed", sx2, sy - 180, paints.text);
-    canvas.drawText("score", cupRect.right + 60, cupRect.top, paints.text);
-    paints.text.setTextSize(150);
-    canvas.drawText("" + game.level, sx1, sy, paints.text);
+    canvas.drawText("next", lx, cupRect.top + 30, paints.text);
+    canvas.drawText("level", lx, cupRect.top + 280, paints.text);
+    canvas.drawText("time", rx, cupRect.top + 30, paints.text);
+    canvas.drawText("speed", rx, cupRect.top + 280, paints.text);
+    canvas.drawText("score", rx, 50, paints.text);
+    paints.text.setTextSize(120);
+    canvas.drawText("" + game.level, lx, cupRect.top + 400, paints.text);
     paints.text.setTextSize(40);
     long time = game.time() / 1000;
     String min = "0" + time / 60;
     String sec = "0" + time % 60;
-    canvas.drawText(min.substring(min.length() - 2) + ":" + sec.substring(sec.length() - 2), sx2, sy - 270, paints.text);
+    canvas.drawText(min.substring(min.length() - 2) + ":" + sec.substring(sec.length() - 2), rx, cupRect.top + 90, paints.text);
     paints.text.setTextSize(60);
-    canvas.drawText("" + game.speed(), sx2, sy - 120, paints.text);
+    canvas.drawText("" + game.speed(), rx, cupRect.top + 350, paints.text);
 
     if (game.message != null)
     {
@@ -257,7 +244,7 @@ public class DrawView extends View
     paints.text.setTextSize(70);
     paints.text.setColor(Color.RED);
     paints.text.setTextAlign(Paint.Align.RIGHT);
-    canvas.drawText("" + game.score, cupRect.right + 140, cupRect.top - 30, paints.text);
+    canvas.drawText("" + game.score, cupRect.right + 140, 130, paints.text);
     if (game.prize > 0 && game.currentFigure != null)
     {
       paints.text.setTextAlign(Paint.Align.CENTER);
@@ -305,8 +292,8 @@ public class DrawView extends View
   private void drawNextFigureSquare(Canvas canvas, int x, int y, byte alignShift)    // draw next figure cupSquare
   {
     int square = offsets.left / 4;
-    float sx = cupRect.left - offsets.left - 2 * square + alignShift * 0.5f * square;
-    float sy = cupRect.top + 170;
+    float sx = cupRect.left - 30 - 4 * square + alignShift * 0.5f * square;
+    float sy = cupRect.top + 30;
     canvas.drawRect(sx + x * square, sy + y * square, sx + (x + 1) * square, sy + (y + 1) * square, paints.cupContents);
   }
 
@@ -357,58 +344,6 @@ public class DrawView extends View
       paints.control.setStrokeWidth(8);
       paints.control.setStyle(Paint.Style.STROKE);
       canvas.drawCircle(pauseTouch.centerX(), pauseTouch.centerY(), (float) pauseTouch.width() / 3, paints.control);    // pause or resume
-    }
-  }
-
-  private void drawGameControls(Canvas canvas)
-  {
-    paints.control.setStrokeWidth(10);
-    paints.control.setStyle(Paint.Style.STROKE);
-    paints.control.setColor(paints.controlColor);
-
-    float h = 3 * (float) (bounds.bottom - cupRect.bottom) / 5;
-    float w = (float) leftTouch.width() / 12;
-    float cy = cupRect.bottom + (float) offsets.bottom / 2;
-    for (int i = 0; i < 3; i++)   // left
-    {
-      int b = Color.red(paints.controlColor) - i * 50;
-      paints.control.setColor(Color.rgb(b, b, b));
-      canvas.drawLine(leftTouch.centerX() + i * w, cy - h / 2, leftTouch.centerX() - w + i * w, cy + 3, paints.control);
-      canvas.drawLine(leftTouch.centerX() + i * w, cy + h / 2, leftTouch.centerX() - w + i * w, cy - 3, paints.control);
-    }
-
-    for (int i = 0; i < 3; i++)   // right
-    {
-      int b = Color.red(paints.controlColor) - i * 50;
-      paints.control.setColor(Color.rgb(b, b, b));
-      canvas.drawLine(rightTouch.centerX() - i * w, cy - h / 2, rightTouch.centerX() + w - i * w, cy + 3, paints.control);
-      canvas.drawLine(rightTouch.centerX() - i * w, cy + h / 2, rightTouch.centerX() + w - i * w, cy - 3, paints.control);
-    }
-
-    w = (float) rotateTouch.width() / 6;    // rotate
-    float lw = w / 3.5f;
-    paints.control.setColor(paints.controlColor);
-    canvas.drawCircle(rotateTouch.centerX(), cy, w, paints.control);
-    canvas.drawLine(rotateTouch.centerX() - w, cy - w / 4, rotateTouch.centerX() - w - lw, cy + w / 7, paints.control);
-    canvas.drawLine(rotateTouch.centerX() - w, cy - w / 4, rotateTouch.centerX() - w + lw, cy + w / 7, paints.control);
-    canvas.drawLine(rotateTouch.centerX() + w, cy + w / 4, rotateTouch.centerX() + w - lw, cy - w / 7, paints.control);
-    canvas.drawLine(rotateTouch.centerX() + w, cy + w / 4, rotateTouch.centerX() + w + lw, cy - w / 7, paints.control);
-
-    if (game.showDropSlider)    // drop slider
-    {
-      w = (float) cupRect.width() / 3;
-      h = (float) cupRect.height() / 50;
-      paints.control.setStrokeWidth(h / 6);
-      int cx = cupRect.centerX();  // cupRect.left + game.currentFigure.pos.x * Cup.W;
-      cy = cupRect.centerY() - (float) cupRect.height() / 10;
-      int lines = 16;
-      for (int i = 0; i < lines; i++)
-      {
-        int b = 255 - i * (255 / lines);
-        paints.control.setColor(Color.rgb(b, b, b));
-        canvas.drawLine(cx - w / 2, cy + (lines - i) * h, cx + 3, cy + (lines - i) * h + h, paints.control);
-        canvas.drawLine(cx + w / 2, cy + (lines - i) * h, cx - 3, cy + (lines - i) * h + h, paints.control);
-      }
     }
   }
 

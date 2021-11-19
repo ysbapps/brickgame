@@ -165,7 +165,7 @@ public class Game extends Thread
     repaint();
   }
 
-  void quitToLandingPage()
+  void quitToStartPage()
   {
     if (state != STATE_PAUSED && state != STATE_GAME_OVER)
       return;
@@ -243,7 +243,7 @@ public class Game extends Thread
     prize = 10 * level * level;
     message = "Bonus " + prize;
     repaint();
-    sleepMs(3000);
+    sleepMs(1500);
     score += prize;
     prize = 0;
     message = null;
