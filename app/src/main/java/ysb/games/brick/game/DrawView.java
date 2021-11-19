@@ -44,8 +44,6 @@ public class DrawView extends View
     System.out.println("View created");
 
     BitmapFactory.Options options = new BitmapFactory.Options();
-//    options.outWidth = 826;
-//    options.outHeight = 1264;
     options.inSampleSize = 2;
     options.inJustDecodeBounds = false;
     bg = BitmapFactory.decodeResource(getResources(), R.drawable.bg, options);
@@ -154,8 +152,8 @@ public class DrawView extends View
       initialize(canvas);
 
     canvas.drawColor(Color.BLACK);
-    int bx = bounds.width() > 826 ? (bounds.width() - 826) / 4 : 0;
-    int by = bounds.height() > 1264 ? (bounds.height() - 1264) / 4 : 0;
+    int bx = bounds.width() > bg.getWidth() ? (bounds.width() - bg.getWidth()) / 2 : 0;
+    int by = cupRect.height() > bg.getHeight() ? (cupRect.height() - bg.getHeight()) / 2 : 0;
     canvas.drawBitmap(bg, bx, by, paints.cupContents);
 
     if (game.state == Game.STATE_NOT_STARTED)
@@ -164,9 +162,6 @@ public class DrawView extends View
     }
     else    // game in progress
     {
-//      if (game.state == Game.STATE_GAME)
-//        drawGameControls(canvas);
-
       drawGeneralControls(canvas);
       drawCup(canvas);
       drawGameInfo(canvas);
