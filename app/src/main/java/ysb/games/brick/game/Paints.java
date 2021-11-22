@@ -6,9 +6,10 @@ import android.graphics.Typeface;
 
 class Paints
 {
-  final int[] cupColors = new int[]{Color.rgb(255, 150, 255), Color.rgb(222, 222, 222),       // contents on merge, merged contents, original cup contents (colored)
-    Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.CYAN, Color.rgb(255, 165, 0), Color.rgb(255, 192, 203)};
-  final int figureColor = Color.rgb(180, 255, 180);
+  final int[] cupColors = new int[]{Color.rgb(255, 222, 255), Color.rgb(192, 192, 192),       // contents on merge, merged contents, original cup contents (colored)
+//    Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.CYAN, Color.rgb(255, 165, 0), Color.rgb(255, 192, 203)};
+      Color.rgb(255, 128, 128), Color.rgb(128, 255, 128), Color.rgb(128, 128, 255), Color.rgb(255, 255, 128), Color.rgb(128, 255, 255), Color.rgb(255, 165, 128), Color.rgb(255, 192, 203)};
+  final int figureColor = Color.rgb(242, 242, 242);
   final Paint cupEdge = new Paint();
   final Paint cupContents = new Paint();
   final Paint control = new Paint();
@@ -22,7 +23,7 @@ class Paints
   {
     cupEdge.setStyle(Paint.Style.STROKE);
     cupEdge.setStrokeWidth(cupEdgeWidth);
-    cupEdge.setColor(Color.rgb(150, 150, 255));
+    cupEdge.setColor(Color.rgb(192, 192, 255));
 
     text.setFlags(Paint.ANTI_ALIAS_FLAG);
     text.setTypeface(Typeface.SANS_SERIF);

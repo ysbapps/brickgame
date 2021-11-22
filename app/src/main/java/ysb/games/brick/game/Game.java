@@ -241,7 +241,7 @@ public class Game extends Thread
     repaint();
     sleepMs(500);
     prize = 10 * level * level;
-    message = "Bonus " + prize;
+    message = "Bonus  +" + prize;
     repaint();
     sleepMs(1500);
     score += prize;

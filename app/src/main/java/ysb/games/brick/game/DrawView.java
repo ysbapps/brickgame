@@ -239,7 +239,7 @@ public class DrawView extends View
     if (game.message != null)
     {
       paints.text.setColor(Color.RED);
-      paints.text.setTextSize(100 * dk);
+      paints.text.setTextSize(70 * dk);
       canvas.drawText("" + game.message, cupRect.centerX(), cupRect.centerY(), paints.text);
     }
 
@@ -251,7 +251,7 @@ public class DrawView extends View
     {
       paints.text.setTextAlign(Paint.Align.CENTER);
       paints.text.setColor(Color.rgb(255 - game.prizeCycle, 255 - game.prizeCycle, 0));
-      canvas.drawText("" + game.prize, cupRect.left + (game.currentFigure.pos.x + 2) * cupSquare,
+      canvas.drawText("+" + game.prize, cupRect.left + (game.currentFigure.pos.x + 2) * cupSquare,
           cupRect.top + game.currentFigure.pos.y * cupSquare - game.prizeCycle, paints.text);
     }
   }
@@ -266,7 +266,7 @@ public class DrawView extends View
         for (int x = 0; x < Figure.SIZE; x++)
           if (figure != null && figure.getCurrContents()[y][x])
             if (figure == game.currentFigure)
-              drawCupSquare(canvas, figure.pos.x + x, figure.pos.y + y);
+              drawCupSquare(canvas, figure.pos.x + x, figure.pos.y + y, true);
             else
               drawNextFigureSquare(canvas, x, y, figure.alignShift());
 
@@ -280,15 +280,48 @@ public class DrawView extends View
         if (game.cup.contents[y][x] > 0)
         {
           paints.cupContents.setColor(isRowComplete ? paints.cupColors[0] : paints.cupColors[game.cup.contents[y][x]]);
-          drawCupSquare(canvas, x, y);
+          drawCupSquare(canvas, x, y, !isRowComplete && game.cup.contents[y][x] == 1);
         }
     }
   }
 
-  private void drawCupSquare(Canvas canvas, int x, int y)    // draw cupSquare on position
+  private void drawCupSquare(Canvas canvas, int x, int y, boolean border)    // draw cupSquare on position
   {
-    canvas.drawRect(cupRect.left + x * cupSquare, cupRect.top + y * cupSquare, cupRect.left + (x + 1) * cupSquare,
-        cupRect.top + (y + 1) * cupSquare, paints.cupContents);
+    paints.cupContents.setStyle(Paint.Style.FILL);
+    paints.cupContents.setAlpha(255);
+
+    float left = cupRect.left + x * cupSquare;
+    float top = cupRect.top + y * cupSquare;
+    float right = cupRect.left + (x + 1) * cupSquare;
+    float bottom = cupRect.top + (y + 1) * cupSquare;
+    canvas.drawRect(left, top, right, bottom, paints.cupContents);
+
+    int c = paints.cupContents.getColor();
+
+    paints.cupContents.setColor(Color.DKGRAY);
+    paints.cupContents.setStyle(Paint.Style.STROKE);
+    paints.cupContents.setStrokeWidth(Math.round(2 * dk));
+    paints.cupContents.setAlpha(border ? 255 : 30);
+    canvas.drawRect(left, top, right - dk, bottom - dk, paints.cupContents);
+    float ld = cupSquare / 3.5f;
+    paints.cupContents.setColor(Color.GRAY);
+    paints.cupContents.setAlpha(border ? 255 : 150);
+    canvas.drawLine(left + ld, bottom - 1.5f * ld, right - 1.5f * ld, top + ld, paints.cupContents);
+    canvas.drawLine(left + ld, bottom - ld, right - ld, top + ld, paints.cupContents);
+    canvas.drawLine(left + 1.5f * ld, bottom - ld, right - ld, top + 1.5f * ld, paints.cupContents);
+
+    paints.cupContents.setStyle(Paint.Style.FILL);
+
+    float dd = cupSquare / 6;
+    float dw = cupSquare / 24;
+    right -= 3;
+    bottom -= 3;
+    canvas.drawCircle(left + dd, top + dd, dw, paints.cupContents);
+    canvas.drawCircle(right - dd, top + dd, dw, paints.cupContents);
+    canvas.drawCircle(left + dd, bottom - dd, dw, paints.cupContents);
+    canvas.drawCircle(right - dd, bottom - dd, dw, paints.cupContents);
+
+    paints.cupContents.setColor(c);
   }
 
   private void drawNextFigureSquare(Canvas canvas, int x, int y, byte alignShift)    // draw next figure cupSquare
