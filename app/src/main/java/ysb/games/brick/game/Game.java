@@ -1,5 +1,7 @@
 package ysb.games.brick.game;
 
+import java.util.HashSet;
+
 import ysb.games.brick.MainBrickActivity;
 
 public class Game extends Thread
@@ -28,8 +30,10 @@ public class Game extends Thread
   int prize;
   int prizeCycle;
   String message;
-  private int dropCount = 0;
-  boolean showDropSlider = false;
+
+  private int figureCount = 0;
+  private long figureStartTime;
+  private HashSet<Integer> figureActions = new HashSet<>();
 
   Scores scores;
 
@@ -53,7 +57,6 @@ public class Game extends Thread
 
   private void repaint()
   {
-    showDropSlider = dropCount < 3 && currentFigure != null && currentFigure.pos.y < 2 * Cup.H / 3 && (System.currentTimeMillis() - lastActionTime) > 3000;
     if (view != null)
       view.postInvalidate();
   }
@@ -71,7 +74,7 @@ public class Game extends Thread
     cup.loadLevel(level);
     currentFigure = new Figure();
     nextFigure = new Figure();
-    lastActionTime = System.currentTimeMillis();
+    figureStartTime = lastActionTime = System.currentTimeMillis();
     wasOnPause = 0;
 
     state = STATE_GAME;
@@ -127,7 +130,9 @@ public class Game extends Thread
           nextLevel();
 
         currentFigure = nextFigure;
-        lastActionTime = System.currentTimeMillis();
+        figureCount++;
+        figureActions = new HashSet<>();
+        figureStartTime = lastActionTime = System.currentTimeMillis();
         if (!cup.isFigurePositionValid(currentFigure))
         {
           finishGame();
@@ -227,17 +232,37 @@ public class Game extends Thread
       case DROP:
         state = STATE_DROPPING;
         currentFigure.movable = false;
-        dropCount++;
         break;
     }
 
+    figureActions.add(action);
     lastActionTime = System.currentTimeMillis();
     repaint();
+  }
+
+  HashSet<Integer> needHelp()
+  {
+    HashSet<Integer> actions = new HashSet<>();
+    if (level == 1 && figureCount < 10 && (time() - figureStartTime) / 1000 > figureCount)
+    {
+      if (!figureActions.contains(MOVE_LEFT) && !figureActions.contains(MOVE_RIGHT))
+      {
+        actions.add(MOVE_LEFT);
+        actions.add(MOVE_RIGHT);
+      }
+      if (!figureActions.contains(ROTATE))
+        actions.add(ROTATE);
+      if (!figureActions.contains(DROP) && currentFigure.pos.y > Cup.H / 2)
+        actions.add(DROP);
+    }
+
+    return actions;
   }
 
   private void nextLevel()
   {
     currentFigure = null;
+    figureCount = 0;
     repaint();
     sleepMs(500);
     prize = 10 * level * level;

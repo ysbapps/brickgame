@@ -1,11 +1,18 @@
 package ysb.games.brick.game;
 
 import android.content.Context;
-import android.graphics.*;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.Rect;
 import android.view.MotionEvent;
 import android.view.View;
 
 import java.util.HashMap;
+import java.util.HashSet;
 
 import ysb.games.brick.R;
 
@@ -35,7 +42,11 @@ public class DrawView extends View
   public static String info = "";
   public static HashMap<Integer, Integer> figures = new HashMap<>();
 
-  Bitmap bg;
+  private final Bitmap bg;
+  private final Bitmap left;
+  private final Bitmap right;
+  private final Bitmap up;
+  private final Bitmap down;
 
 
   public DrawView(Context context)
@@ -48,6 +59,10 @@ public class DrawView extends View
     options.inJustDecodeBounds = false;
     bg = BitmapFactory.decodeResource(getResources(), R.drawable.bg, options);
     System.out.println("bg: " + bg.getWidth() + 'x' + bg.getHeight());
+    left = BitmapFactory.decodeResource(getResources(), R.drawable.left, options);
+    right = BitmapFactory.decodeResource(getResources(), R.drawable.right, options);
+    up = BitmapFactory.decodeResource(getResources(), R.drawable.up, options);
+    down = BitmapFactory.decodeResource(getResources(), R.drawable.down, options);
   }
 
   private void initialize(Canvas canvas)
@@ -161,12 +176,46 @@ public class DrawView extends View
       drawGeneralControls(canvas);
       drawCup(canvas);
       drawGameInfo(canvas);
+
+      HashSet<Integer> helpActions = game.needHelp();
+      if (helpActions.size()>0)
+      {
+        syncAnimations(helpActions);
+//        for (Animation animation : animations)
+//          animation.draw(canvas);
+      }
+
+
+//      if (game.time() > 2000 && game.time() < 4000)
+//        drawControlsAnimation(canvas, 2000);
+//      if (game.time() > 5000 && game.time() < 7000)
+//        drawControlsAnimation(canvas, 5000);
+//      if (game.time() > 8000 && game.time() < 10000)
+//        drawControlsAnimation(canvas, 8000);
     }
 
 //    canvas.drawRect(cupRect.right, cupRect.top - 100, bounds.right, cupRect.top, paints.debugLine);
 //    for (Rect r : new Rect[]{pauseTouch, quitGameTouch, leftTouch, rightTouch, rotateTouch})
 //      canvas.drawRect(r, paints.debugLine);
 //    drawDebugInfo(canvas);
+  }
+
+  private void syncAnimations(HashSet<Integer> helpActions)
+  {
+
+  }
+
+  private void drawControlsAnimation(Canvas canvas, long t0)
+  {
+    int a = Math.round((game.time() - t0) / 2f);
+    if (a > 255)
+      a = 255 - (a - 255);
+    if (a < 0)
+      a = 0;
+    paints.cupContents.setAlpha(a);
+    canvas.drawBitmap(left, cupRect.left, cupRect.bottom - 300 * dk, paints.cupContents);
+    canvas.drawBitmap(right, cupRect.right - right.getWidth(), cupRect.bottom - 300 * dk, paints.cupContents);
+    paints.cupContents.setAlpha(255);
   }
 
   private void drawStartPage(Canvas canvas)
