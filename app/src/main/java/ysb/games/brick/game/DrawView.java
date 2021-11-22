@@ -99,6 +99,7 @@ public class DrawView extends View
   {
     event = evt.toString();
     touch.onEvent(evt);
+//    System.out.println(touch);
     int x = touch.x;
     int y = touch.y;
     if (game.state == Game.STATE_NOT_STARTED && touch.action == Touch.ACTION_UP)
@@ -110,22 +111,17 @@ public class DrawView extends View
     }
     else    // game is started
     {
-      if (touch.action == Touch.ACTION_MOVE && touch.dist > 100)   // slide
+      if (touch.action == Touch.ACTION_MOVE && touch.dist > cupSquare &&
+          (touch.dir == Touch.DIR_LEFT || touch.dir == Touch.DIR_RIGHT) && bounds.contains(x, y))    // touch down and touch move belong to the control rect
       {
-        if (touch.dir == Touch.DIR_LEFT && bounds.contains(x, y))    // touch down and touch move belong to the control rect
-          game.action(Game.MOVE_LEFT);
-        else if (touch.dir == Touch.DIR_RIGHT && bounds.contains(x, y))
-          game.action(Game.MOVE_RIGHT);
+        game.action(touch.dir == Touch.DIR_LEFT ? Game.MOVE_LEFT : Game.MOVE_RIGHT);
+        touch.resetDist();
       }
       else if (touch.action == Touch.ACTION_UP)
       {
         if (touch.dist < 30)   // click
         {
-          if (touch.y > cupRect.top && touch.x < bounds.width() / 2)
-            game.action(Game.MOVE_LEFT);
-          else if (touch.y > cupRect.top && touch.x > bounds.width() / 2)
-            game.action(Game.MOVE_RIGHT);
-          else if (pauseTouch.contains(x, y))
+          if (pauseTouch.contains(x, y))
           {
             if (game.state == Game.STATE_GAME)
               game.pause();

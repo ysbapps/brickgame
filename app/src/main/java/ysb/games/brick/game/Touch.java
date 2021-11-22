@@ -3,6 +3,8 @@ package ysb.games.brick.game;
 import android.graphics.PointF;
 import android.view.MotionEvent;
 
+import androidx.annotation.NonNull;
+
 public class Touch
 {
   private final static int ACTION_UNDEFINED = 0;
@@ -53,6 +55,12 @@ public class Touch
     action = ACTION_DOWN;
   }
 
+  void resetDist()
+  {
+    down.x = x;
+    down.y = y;
+  }
+
   private void move(float x, float y)
   {
     double angle = Math.atan2(x - down.x, down.y - y);    // 0 - PI (<180); -PI(>180) - 0
@@ -64,5 +72,19 @@ public class Touch
       dir = 0;
 
     action = ACTION_MOVE;
+  }
+
+  @NonNull
+  @Override
+  public String toString()
+  {
+    return "Touch{" +
+        "down=" + down +
+        ", x=" + x +
+        ", y=" + y +
+        ", action=" + action +
+        ", dir=" + dir +
+        ", dist=" + dist +
+        '}';
   }
 }
