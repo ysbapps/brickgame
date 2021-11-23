@@ -23,6 +23,7 @@ public class Touch
   int action = ACTION_UNDEFINED;
   int dir;
   int dist;
+  boolean movedLeftRight;
 
 
   void onEvent(MotionEvent evt)
@@ -53,12 +54,14 @@ public class Touch
     down.x = x;
     down.y = y;
     action = ACTION_DOWN;
+    movedLeftRight = false;
   }
 
-  void resetDist()
+  void movedLeftRight()
   {
     down.x = x;
     down.y = y;
+    movedLeftRight = true;
   }
 
   private void move(float x, float y)

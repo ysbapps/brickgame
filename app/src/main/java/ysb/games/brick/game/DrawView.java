@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.view.MotionEvent;
 import android.view.View;
@@ -45,8 +46,9 @@ public class DrawView extends View
   private final Bitmap bg;
   private final Bitmap left;
   private final Bitmap right;
-  private final Bitmap up;
-  private final Bitmap down;
+  private final Bitmap rotate;
+  private final Bitmap drop;
+  private final HashMap<Integer, Animation> animations = new HashMap<>();
 
 
   public DrawView(Context context)
@@ -61,8 +63,8 @@ public class DrawView extends View
     System.out.println("bg: " + bg.getWidth() + 'x' + bg.getHeight());
     left = BitmapFactory.decodeResource(getResources(), R.drawable.left, options);
     right = BitmapFactory.decodeResource(getResources(), R.drawable.right, options);
-    up = BitmapFactory.decodeResource(getResources(), R.drawable.up, options);
-    down = BitmapFactory.decodeResource(getResources(), R.drawable.down, options);
+    rotate = BitmapFactory.decodeResource(getResources(), R.drawable.rotate, options);
+    drop = BitmapFactory.decodeResource(getResources(), R.drawable.drop, options);
   }
 
   private void initialize(Canvas canvas)
@@ -126,17 +128,22 @@ public class DrawView extends View
     }
     else    // game is started
     {
-      if (touch.action == Touch.ACTION_MOVE && touch.dist > cupSquare &&
+      double minSlideDist = 0.7 * cupSquare * dk;
+      if (touch.action == Touch.ACTION_MOVE && touch.dist > minSlideDist &&
           (touch.dir == Touch.DIR_LEFT || touch.dir == Touch.DIR_RIGHT) && bounds.contains(x, y))    // touch down and touch move belong to the control rect
       {
         game.action(touch.dir == Touch.DIR_LEFT ? Game.MOVE_LEFT : Game.MOVE_RIGHT);
-        touch.resetDist();
+        touch.movedLeftRight();
       }
-      else if (touch.action == Touch.ACTION_UP)
+      else if (touch.action == Touch.ACTION_UP && !touch.movedLeftRight)
       {
-        if (touch.dist < 30)   // click
+        if (touch.dist < minSlideDist / 2)   // click
         {
-          if (pauseTouch.contains(x, y))
+          if (touch.y > cupRect.top && touch.x < bounds.width() / 2f - cupSquare * dk)
+            game.action(Game.MOVE_LEFT);
+          else if (touch.y > cupRect.top && touch.x > bounds.width() / 2f + cupSquare * dk)
+            game.action(Game.MOVE_RIGHT);
+          else if (pauseTouch.contains(x, y))
           {
             if (game.state == Game.STATE_GAME)
               game.pause();
@@ -146,9 +153,9 @@ public class DrawView extends View
           else if (quitGameTouch.contains(x, y))
             game.quitToStartPage();
         }
-        else if (bounds.contains(x, y) && touch.dist > 50 && touch.dir == Touch.DIR_UP)
+        else if (bounds.contains(x, y) && touch.dist > minSlideDist / 2 && touch.dir == Touch.DIR_UP)
           game.action(Game.ROTATE);
-        else if (bounds.contains(x, y) && touch.dist > 200 && touch.dir == Touch.DIR_DOWN)
+        else if (bounds.contains(x, y) && touch.dist > 3 * minSlideDist && touch.dir == Touch.DIR_DOWN)
           game.action(Game.DROP);
       }
     }
@@ -178,20 +185,10 @@ public class DrawView extends View
       drawGameInfo(canvas);
 
       HashSet<Integer> helpActions = game.needHelp();
-      if (helpActions.size()>0)
-      {
-        syncAnimations(helpActions);
-//        for (Animation animation : animations)
-//          animation.draw(canvas);
-      }
-
-
-//      if (game.time() > 2000 && game.time() < 4000)
-//        drawControlsAnimation(canvas, 2000);
-//      if (game.time() > 5000 && game.time() < 7000)
-//        drawControlsAnimation(canvas, 5000);
-//      if (game.time() > 8000 && game.time() < 10000)
-//        drawControlsAnimation(canvas, 8000);
+      syncAnimations(helpActions);
+      System.out.println(animations);
+      for (Animation animation : animations.values())
+        animation.update(canvas);
     }
 
 //    canvas.drawRect(cupRect.right, cupRect.top - 100, bounds.right, cupRect.top, paints.debugLine);
@@ -202,20 +199,25 @@ public class DrawView extends View
 
   private void syncAnimations(HashSet<Integer> helpActions)
   {
+    for (int i = 0; i < animations.size(); i++)
+    {
+      for (int id : animations.keySet())
+        if (!helpActions.contains(id))
+        {
+          animations.remove(id);
+          break;
+        }
+    }
 
-  }
-
-  private void drawControlsAnimation(Canvas canvas, long t0)
-  {
-    int a = Math.round((game.time() - t0) / 2f);
-    if (a > 255)
-      a = 255 - (a - 255);
-    if (a < 0)
-      a = 0;
-    paints.cupContents.setAlpha(a);
-    canvas.drawBitmap(left, cupRect.left, cupRect.bottom - 300 * dk, paints.cupContents);
-    canvas.drawBitmap(right, cupRect.right - right.getWidth(), cupRect.bottom - 300 * dk, paints.cupContents);
-    paints.cupContents.setAlpha(255);
+    for (int id : helpActions)
+      if (!animations.containsKey(id))
+      {
+        Bitmap[] ba = {null, left, right, rotate, drop};
+        float lry = cupRect.bottom - 300 * dk;
+        float rdx = cupRect.centerX() - rotate.getWidth() / 2f;
+        PointF[] pa = {null, new PointF(cupRect.left, lry), new PointF(cupRect.right - right.getWidth(), lry), new PointF(rdx, lry - 100 * dk), new PointF(rdx, lry)};
+        animations.put(id, new Animation(ba[id], pa[id], 1000));
+      }
   }
 
   private void drawStartPage(Canvas canvas)

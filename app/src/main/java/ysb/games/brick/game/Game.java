@@ -74,6 +74,8 @@ public class Game extends Thread
     cup.loadLevel(level);
     currentFigure = new Figure();
     nextFigure = new Figure();
+    figureCount = 0;
+    figureActions.clear();
     figureStartTime = lastActionTime = System.currentTimeMillis();
     wasOnPause = 0;
 
@@ -131,7 +133,7 @@ public class Game extends Thread
 
         currentFigure = nextFigure;
         figureCount++;
-        figureActions = new HashSet<>();
+        figureActions.clear();
         figureStartTime = lastActionTime = System.currentTimeMillis();
         if (!cup.isFigurePositionValid(currentFigure))
         {
@@ -243,16 +245,17 @@ public class Game extends Thread
   HashSet<Integer> needHelp()
   {
     HashSet<Integer> actions = new HashSet<>();
-    if (level == 1 && figureCount < 10 && (time() - figureStartTime) / 1000 > figureCount)
+    long seconds = (System.currentTimeMillis() - figureStartTime) / 1000;
+    if (level == 1 && figureCount < 10 && seconds > figureCount && !figureActions.contains(DROP) && System.currentTimeMillis() - lastActionTime > 2000)
     {
-      if (!figureActions.contains(MOVE_LEFT) && !figureActions.contains(MOVE_RIGHT))
+      if (!figureActions.contains(MOVE_LEFT) && !figureActions.contains(MOVE_RIGHT) && figureCount < 7 && seconds < 6 + figureCount / 2)
       {
         actions.add(MOVE_LEFT);
         actions.add(MOVE_RIGHT);
       }
-      if (!figureActions.contains(ROTATE))
+      if (!figureActions.contains(ROTATE) && figureCount < 7 && seconds < 6 + figureCount / 2)
         actions.add(ROTATE);
-      if (!figureActions.contains(DROP) && currentFigure.pos.y > Cup.H / 2)
+      if (actions.size() == 0 && !figureActions.contains(DROP) && (System.currentTimeMillis() - lastActionTime) / 1000 > 4 + figureCount / 2)
         actions.add(DROP);
     }
 
