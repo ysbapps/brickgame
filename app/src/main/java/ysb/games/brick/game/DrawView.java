@@ -146,7 +146,10 @@ public class DrawView extends View
           else if (pauseTouch.contains(x, y))
           {
             if (game.state == Game.STATE_GAME)
+            {
               game.pause();
+              animations.clear();
+            }
             else if (game.state == Game.STATE_PAUSED)
               game.resumeFromPause();
           }
@@ -184,11 +187,14 @@ public class DrawView extends View
       drawCup(canvas);
       drawGameInfo(canvas);
 
-      HashSet<Integer> helpActions = game.needHelp();
-      syncAnimations(helpActions);
-      System.out.println(animations);
-      for (Animation animation : animations.values())
-        animation.update(canvas);
+      if (game.state == Game.STATE_GAME)
+      {
+        HashSet<Integer> helpActions = game.needHelp();
+        syncAnimations(helpActions);
+        System.out.println(animations);
+        for (Animation animation : animations.values())
+          animation.update(canvas);
+      }
     }
 
 //    canvas.drawRect(cupRect.right, cupRect.top - 100, bounds.right, cupRect.top, paints.debugLine);
