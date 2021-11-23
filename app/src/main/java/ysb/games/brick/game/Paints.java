@@ -8,7 +8,7 @@ class Paints
 {
   final int[] cupColors = new int[]{Color.rgb(255, 222, 255), Color.rgb(192, 192, 192),       // contents on merge, merged contents, original cup contents (colored)
 //    Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.CYAN, Color.rgb(255, 165, 0), Color.rgb(255, 192, 203)};
-      Color.rgb(255, 128, 128), Color.rgb(128, 255, 128), Color.rgb(128, 128, 255), Color.rgb(255, 255, 128), Color.rgb(128, 255, 255), Color.rgb(255, 165, 128), Color.rgb(255, 192, 203)};
+      Color.rgb(255, 164, 164), Color.rgb(164, 255, 164), Color.rgb(164, 164, 255), Color.rgb(255, 255, 164), Color.rgb(128, 255, 255), Color.rgb(255, 192, 164), Color.rgb(255, 192, 203)};
   final int figureColor = Color.rgb(242, 242, 242);
   final Paint cupEdge = new Paint();
   final Paint cupContents = new Paint();
