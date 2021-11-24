@@ -155,6 +155,11 @@ public class DrawView extends View
           }
           else if (quitGameTouch.contains(x, y))
             game.quitToStartPage();
+          else if (x > cupRect.right && y < cupRect.top)
+          {
+            game.level++;
+            game.cup.loadLevel(game.level);
+          }
         }
         else if (bounds.contains(x, y) && touch.dist > minSlideDist / 2 && touch.dir == Touch.DIR_UP)
           game.action(Game.ROTATE);
