@@ -244,15 +244,16 @@ public class DrawView extends View
       canvas.drawText("best score", sx1, offsets.top, paints.text);
       paints.text.setTextAlign(Paint.Align.LEFT);
       canvas.drawText("best level", sx2, offsets.top, paints.text);
-      paints.text.setTextSize(60 * dk);
+      paints.text.setTextSize(50 * dk);
       for (int i = 0; i < scoreSize; i++)
       {
-        paints.text.setColor(Color.rgb(255, i * 255 / scoreSize, i * 255 / scoreSize));
+        int c = (scoreSize - i) * 255 / scoreSize;
+        paints.text.setColor(Color.rgb(c, c, 255));
         paints.text.setTextAlign(Paint.Align.RIGHT);
-        int y = Math.round((i + 1) * 80 * dk);
-        canvas.drawText("" + game.scores.scoreTable.get(i), sx1, offsets.top + y, paints.text);
+        int y = Math.round((i + 1) * 60 * dk);
+        canvas.drawText("" + game.scores.scoreTable.get(i), sx1, offsets.top + 10 * dk + y, paints.text);
         paints.text.setTextAlign(Paint.Align.LEFT);
-        canvas.drawText("" + game.scores.levelTable.get(i), sx2, offsets.top + y, paints.text);
+        canvas.drawText("" + game.scores.levelTable.get(i), sx2, offsets.top + 10 * dk + y, paints.text);
       }
     }
 
