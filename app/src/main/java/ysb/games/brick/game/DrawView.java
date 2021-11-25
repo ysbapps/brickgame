@@ -242,12 +242,10 @@ public class DrawView extends View
     {
       paints.text.setTextSize(40 * dk);
       paints.text.setColor(paints.controlColor);
-      float sx1 = bounds.centerX() - 150 * dk;
-      float sx2 = bounds.centerX() + 150 * dk;
-      paints.text.setTextAlign(Paint.Align.RIGHT);
-      canvas.drawText("best score", sx1, offsets.top, paints.text);
+      float sx1 = 60 * dk;
+      float sx2 = 260 * dk;
       paints.text.setTextAlign(Paint.Align.LEFT);
-      canvas.drawText("best level", sx2, offsets.top, paints.text);
+      canvas.drawText("best score      best level", sx1, offsets.top, paints.text);
       paints.text.setTextSize(50 * dk);
       for (int i = 0; i < scoreSize; i++)
       {
@@ -255,9 +253,9 @@ public class DrawView extends View
         paints.text.setColor(Color.rgb(c, c, 255));
         paints.text.setTextAlign(Paint.Align.RIGHT);
         int y = Math.round((i + 1) * 60 * dk);
-        canvas.drawText("" + game.scores.scoreTable.get(i), sx1 - 20 * dk, offsets.top + 10 * dk + y, paints.text);
+        canvas.drawText("" + game.scores.scoreTable.get(i), sx2 - 20 * dk, offsets.top + 10 * dk + y, paints.text);
         paints.text.setTextAlign(Paint.Align.LEFT);
-        canvas.drawText("" + game.scores.levelTable.get(i), sx2 + 60 * dk, offsets.top + 10 * dk + y, paints.text);
+        canvas.drawText("" + game.scores.levelTable.get(i), sx2 + 100 * dk, offsets.top + 10 * dk + y, paints.text);
       }
     }
 
@@ -296,9 +294,10 @@ public class DrawView extends View
     {
       int c = paints.text.getColor();
       paints.text.setColor(Color.BLACK);
-      canvas.drawText(game.message, cupRect.centerX() + 4 * dk, cupRect.centerY() + 4 * dk, paints.text);
+      float y = cupRect.centerY() - 150 * dk;
+      canvas.drawText(game.message, cupRect.centerX() + 4 * dk, y + 4 * dk, paints.text);
       paints.text.setColor(c);
-      canvas.drawText(game.message, cupRect.centerX(), cupRect.centerY(), paints.text);
+      canvas.drawText(game.message, cupRect.centerX(), y, paints.text);
     }
 
     paints.text.setTextAlign(Paint.Align.RIGHT);
