@@ -139,9 +139,9 @@ public class DrawView extends View
       {
         if (touch.dist < minSlideDist / 2)   // click
         {
-          if (touch.y > cupRect.top && touch.x < bounds.width() / 2f - cupSquare * dk)
+          if (touch.y > cupRect.top && touch.x < bounds.width() / 2f - cupSquare * dk / 2)
             game.action(Game.MOVE_LEFT);
-          else if (touch.y > cupRect.top && touch.x > bounds.width() / 2f + cupSquare * dk)
+          else if (touch.y > cupRect.top && touch.x > bounds.width() / 2f + cupSquare * dk / 2)
             game.action(Game.MOVE_RIGHT);
           else if (pauseTouch.contains(x, y))
           {
@@ -281,14 +281,14 @@ public class DrawView extends View
     paints.text.setTextSize(30 * dk);
     paints.text.setTextAlign(Paint.Align.CENTER);
     paints.text.setColor(paints.controlColor);
-    float lx = cupRect.left - 90 * dk;
-    float rx = cupRect.right + 90 * dk;
+    float lx = cupRect.left - 74 * dk;
+    float rx = cupRect.right + 74 * dk;
     canvas.drawText("next", lx, cupRect.top + 30 * dk, paints.text);
     canvas.drawText("level", lx, cupRect.top + 280 * dk, paints.text);
     canvas.drawText("time", rx, cupRect.top + 30 * dk, paints.text);
     canvas.drawText("speed", rx, cupRect.top + 280 * dk, paints.text);
     canvas.drawText("score", rx, 50 * dk, paints.text);
-    paints.text.setTextSize(120 * dk);
+    paints.text.setTextSize(100 * dk);
     canvas.drawText("" + game.level, lx, cupRect.top + 400 * dk, paints.text);
     paints.text.setTextSize(40 * dk);
     long time = game.time() / 1000;
@@ -389,7 +389,7 @@ public class DrawView extends View
   private void drawNextFigureSquare(Canvas canvas, int x, int y, byte alignShift)    // draw next figure cupSquare
   {
     long square = Math.round(offsets.left / 4.2);
-    float sx = cupRect.left - 24 * dk - 4 * square + alignShift * 0.5f * square;
+    float sx = cupRect.left - 18 * dk - 4 * square + alignShift * 0.5f * square;
     float sy = cupRect.top + 30 * dk;
     canvas.drawRect(sx + x * square, sy + y * square, sx + (x + 1) * square, sy + (y + 1) * square, paints.cupContents);
   }
