@@ -43,8 +43,7 @@ public class DrawView extends View
   public static String info = "";
   public static HashMap<Integer, Integer> figures = new HashMap<>();
 
-  private final Bitmap bg;
-  private final Bitmap pauseBg;
+  private final Bitmap[] bgs = new Bitmap[3];
   private final Bitmap left;
   private final Bitmap right;
   private final Bitmap rotate;
@@ -60,9 +59,10 @@ public class DrawView extends View
     BitmapFactory.Options options = new BitmapFactory.Options();
     options.inSampleSize = 2;
     options.inJustDecodeBounds = false;
-    bg = BitmapFactory.decodeResource(getResources(), R.drawable.bg, options);
-    System.out.println("bg: " + bg.getWidth() + 'x' + bg.getHeight());
-    pauseBg = BitmapFactory.decodeResource(getResources(), R.drawable.pause_bg, options);
+    bgs[0] = BitmapFactory.decodeResource(getResources(), R.drawable.start_bg, options);
+    bgs[1] = BitmapFactory.decodeResource(getResources(), R.drawable.bg, options);
+    System.out.println("bg: " + bgs[1].getWidth() + 'x' + bgs[1].getHeight());
+    bgs[2] = BitmapFactory.decodeResource(getResources(), R.drawable.pause_bg, options);
     left = BitmapFactory.decodeResource(getResources(), R.drawable.left, options);
     right = BitmapFactory.decodeResource(getResources(), R.drawable.right, options);
     rotate = BitmapFactory.decodeResource(getResources(), R.drawable.rotate, options);
@@ -98,10 +98,11 @@ public class DrawView extends View
         cupRect.left, cupRect.bottom + cupEdgeWidth / 2, cupRect.right, cupRect.bottom + cupEdgeWidth / 2,
         cupRect.right + cupEdgeWidth / 2, cupRect.bottom + cupEdgeWidth, cupRect.right + cupEdgeWidth / 2, cupRect.top};
 
-    int pauseSquare = Math.min(cupRect.left, 200);
-    int sx = cupRect.left - offsets.left;
-    pauseTouch = new Rect(sx, 0, sx + pauseSquare, pauseSquare);
-    quitGameTouch = new Rect(pauseTouch.right, 0, pauseTouch.right + pauseSquare, pauseSquare);
+    int pauseSquare = Math.min(cupRect.left, 180);
+    int sx = cupRect.right;
+    int sy = cupRect.top + Math.round(470 * dk);
+    pauseTouch = new Rect(sx, sy, sx + pauseSquare, sy + pauseSquare);
+    quitGameTouch = new Rect(0, pauseTouch.top, cupRect.left, pauseTouch.bottom);
 
     paints = new Paints(cupEdgeWidth);
   }
@@ -141,11 +142,7 @@ public class DrawView extends View
       {
         if (touch.dist < minSlideDist / 2)   // click
         {
-          if (touch.y > cupRect.top && touch.x < bounds.width() / 2f - cupSquare * dk / 2)
-            game.action(Game.MOVE_LEFT);
-          else if (touch.y > cupRect.top && touch.x > bounds.width() / 2f + cupSquare * dk / 2)
-            game.action(Game.MOVE_RIGHT);
-          else if (pauseTouch.contains(x, y))
+          if (pauseTouch.contains(x, y))
           {
             if (game.state == Game.STATE_GAME)
             {
@@ -162,6 +159,10 @@ public class DrawView extends View
             game.level++;
             game.cup.loadLevel(game.level);
           }
+          else if (touch.y > cupRect.top && touch.x < bounds.width() / 2f - cupSquare * dk / 2)
+            game.action(Game.MOVE_LEFT);
+          else if (touch.y > cupRect.top && touch.x > bounds.width() / 2f + cupSquare * dk / 2)
+            game.action(Game.MOVE_RIGHT);
         }
         else if (bounds.contains(x, y) && touch.dist > minSlideDist / 2 && touch.dir == Touch.DIR_UP)
           game.action(Game.ROTATE);
@@ -180,9 +181,10 @@ public class DrawView extends View
       initialize(canvas);
 
     canvas.drawColor(Color.BLACK);
-    int bx = bounds.width() > bg.getWidth() ? (bounds.width() - bg.getWidth()) / 2 : 0;
-    int by = cupRect.height() > bg.getHeight() ? (cupRect.height() - bg.getHeight()) / 2 : 0;
-    canvas.drawBitmap(game.state == Game.STATE_PAUSED ? pauseBg : bg, bx, by, paints.cupContents);
+    int bx = bounds.width() > bgs[0].getWidth() ? (bounds.width() - bgs[0].getWidth()) / 2 : 0;
+    int by = cupRect.height() > bgs[0].getHeight() ? (cupRect.height() - bgs[0].getHeight()) / 2 : 0;
+    int ii = game.state < 3 ? game.state : 1;
+    canvas.drawBitmap(bgs[ii], bx, by, paints.cupContents);
 
     if (game.state == Game.STATE_NOT_STARTED)
     {
@@ -205,7 +207,7 @@ public class DrawView extends View
     }
 
 //    canvas.drawRect(cupRect.right, cupRect.top - 100, bounds.right, cupRect.top, paints.debugLine);
-//    for (Rect r : new Rect[]{pauseTouch, quitGameTouch, leftTouch, rightTouch, rotateTouch})
+//    for (Rect r : new Rect[]{pauseTouch, quitGameTouch})
 //      canvas.drawRect(r, paints.debugLine);
 //    drawDebugInfo(canvas);
   }
@@ -240,8 +242,8 @@ public class DrawView extends View
     {
       paints.text.setTextSize(40 * dk);
       paints.text.setColor(paints.controlColor);
-      float sx1 = bounds.centerX() - 100 * dk;
-      float sx2 = bounds.centerX() + 100 * dk;
+      float sx1 = bounds.centerX() - 150 * dk;
+      float sx2 = bounds.centerX() + 150 * dk;
       paints.text.setTextAlign(Paint.Align.RIGHT);
       canvas.drawText("best score", sx1, offsets.top, paints.text);
       paints.text.setTextAlign(Paint.Align.LEFT);
@@ -253,30 +255,17 @@ public class DrawView extends View
         paints.text.setColor(Color.rgb(c, c, 255));
         paints.text.setTextAlign(Paint.Align.RIGHT);
         int y = Math.round((i + 1) * 60 * dk);
-        canvas.drawText("" + game.scores.scoreTable.get(i), sx1, offsets.top + 10 * dk + y, paints.text);
+        canvas.drawText("" + game.scores.scoreTable.get(i), sx1 - 20 * dk, offsets.top + 10 * dk + y, paints.text);
         paints.text.setTextAlign(Paint.Align.LEFT);
-        canvas.drawText("" + game.scores.levelTable.get(i), sx2, offsets.top + 10 * dk + y, paints.text);
+        canvas.drawText("" + game.scores.levelTable.get(i), sx2 + 60 * dk, offsets.top + 10 * dk + y, paints.text);
       }
     }
 
-    paints.text.setTextSize(60 * dk);
-    paints.text.setColor(paints.controlColor);
-    paints.text.setTextAlign(Paint.Align.CENTER);
-    for (Rect rect : new Rect[]{startTouch})
-    {
-      paints.control.setColor(paints.controlColor);
-      paints.control.setStyle(Paint.Style.STROKE);
-      paints.control.setStrokeWidth(8);
-      float r = (float) rect.height() / 2;
-      canvas.drawCircle(rect.left, rect.top + r, r, paints.control);
-      canvas.drawCircle(rect.right, rect.top + r, r, paints.control);
-      paints.control.setColor(paints.controlColor);
-      paints.control.setStyle(Paint.Style.STROKE);
-      canvas.drawLine(rect.left, rect.top, rect.right, rect.top, paints.control);
-      canvas.drawLine(rect.left, rect.bottom, rect.right, rect.bottom, paints.control);
-      canvas.drawText(rect == startTouch ? "START" : "QUIT", rect.centerX(), rect.top + 90 * dk, paints.text);
-    }
-
+    paints.control.setColor(paints.controlColor);
+    paints.control.setStyle(Paint.Style.STROKE);
+    paints.control.setStrokeWidth(8);
+    float r = (float) startTouch.height() / 2;
+    canvas.drawCircle(startTouch.left, startTouch.top + r, r, paints.control);
   }
 
   private void drawGameInfo(Canvas canvas)
@@ -301,15 +290,17 @@ public class DrawView extends View
     paints.text.setTextSize(60 * dk);
     canvas.drawText("" + game.speed(), rx, cupRect.top + 350 * dk, paints.text);
 
+    paints.text.setTextSize(70 * dk);
+    paints.text.setColor(game.state == Game.STATE_GAME_OVER ? Color.RED : Color.WHITE);
     if (game.message != null)
     {
-      paints.text.setColor(Color.RED);
-      paints.text.setTextSize(70 * dk);
-      canvas.drawText("" + game.message, cupRect.centerX(), cupRect.centerY(), paints.text);
+      int c = paints.text.getColor();
+      paints.text.setColor(Color.BLACK);
+      canvas.drawText(game.message, cupRect.centerX() + 4 * dk, cupRect.centerY() + 4 * dk, paints.text);
+      paints.text.setColor(c);
+      canvas.drawText(game.message, cupRect.centerX(), cupRect.centerY(), paints.text);
     }
 
-    paints.text.setTextSize(70 * dk);
-    paints.text.setColor(Color.RED);
     paints.text.setTextAlign(Paint.Align.RIGHT);
     canvas.drawText("" + game.score, cupRect.right + 140 * dk, 130 * dk, paints.text);
     if (game.prize > 0 && game.currentFigure != null)
