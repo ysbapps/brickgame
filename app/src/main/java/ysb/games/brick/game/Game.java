@@ -242,24 +242,22 @@ public class Game extends Thread
     repaint();
   }
 
-  HashSet<Integer> needHelp()
+  void needHelp(HashSet<Integer> actions)
   {
-    HashSet<Integer> actions = new HashSet<>();
+    actions.clear();
     long seconds = (System.currentTimeMillis() - figureStartTime) / 1000;
     if (level == 1 && figureCount < 10 && seconds > figureCount && !figureActions.contains(DROP) && System.currentTimeMillis() - lastActionTime > 2000)
     {
-      if (!figureActions.contains(MOVE_LEFT) && !figureActions.contains(MOVE_RIGHT) && figureCount < 7 && seconds < 6 + figureCount / 2)
+      if (!figureActions.contains(MOVE_LEFT) && !figureActions.contains(MOVE_RIGHT) && figureCount < 7 && seconds < 7 + figureCount / 2)
       {
         actions.add(MOVE_LEFT);
         actions.add(MOVE_RIGHT);
       }
-      if (!figureActions.contains(ROTATE) && figureCount < 7 && seconds < 6 + figureCount / 2)
+      if (!figureActions.contains(ROTATE) && figureCount < 7 && seconds < 7 + figureCount / 2)
         actions.add(ROTATE);
       if (actions.size() == 0 && !figureActions.contains(DROP) && (System.currentTimeMillis() - lastActionTime) / 1000 > 4 + figureCount / 2)
         actions.add(DROP);
     }
-
-    return actions;
   }
 
   private void nextLevel()

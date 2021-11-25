@@ -48,6 +48,7 @@ public class DrawView extends View
   private final Bitmap right;
   private final Bitmap rotate;
   private final Bitmap drop;
+  private final HashSet<Integer> helpActions = new HashSet<>();
   private final HashMap<Integer, Animation> animations = new HashMap<>();
 
 
@@ -78,12 +79,6 @@ public class DrawView extends View
     offsets = new Rect(Math.round(150 * dw), Math.round(200 * dh), Math.round(150 * dw), Math.round(50 * dh));
     System.out.println("offsets: " + offsets);
 
-    int cw = bounds.width() / 2;
-    int ch = bounds.height() / 12;
-    int cx = bounds.centerX() - cw / 2;
-    int cy = bounds.bottom - 30 * ch / 9;
-    startTouch = new Rect(cx, cy, cx + cw, cy + ch);
-
     float maxSquareW = (bounds.width() - offsets.left - offsets.right) / (float) Cup.W;
     float maxSquareH = (bounds.height() - offsets.top - offsets.bottom) / (float) Cup.H;
     cupSquare = Math.min(maxSquareW, maxSquareH);
@@ -97,6 +92,11 @@ public class DrawView extends View
         cupRect.left - cupEdgeWidth / 2, cupRect.top, cupRect.left - cupEdgeWidth / 2, cupRect.bottom + cupEdgeWidth,
         cupRect.left, cupRect.bottom + cupEdgeWidth / 2, cupRect.right, cupRect.bottom + cupEdgeWidth / 2,
         cupRect.right + cupEdgeWidth / 2, cupRect.bottom + cupEdgeWidth, cupRect.right + cupEdgeWidth / 2, cupRect.top};
+
+    int r = Math.round(120 * dk);
+    int cx = cupRect.left;
+    int cy = bounds.bottom - Math.round(420 * dk);
+    startTouch = new Rect(cx, cy, cx + r, cy + r);
 
     int pauseSquare = Math.min(cupRect.left, 180);
     int sx = cupRect.right;
@@ -198,9 +198,9 @@ public class DrawView extends View
 
       if (game.state == Game.STATE_GAME)
       {
-        HashSet<Integer> helpActions = game.needHelp();
-        syncAnimations(helpActions);
-        System.out.println(animations);
+        game.needHelp(helpActions);
+        syncAnimations();
+//        System.out.println(animations);
         for (Animation animation : animations.values())
           animation.update(canvas);
       }
@@ -212,7 +212,7 @@ public class DrawView extends View
 //    drawDebugInfo(canvas);
   }
 
-  private void syncAnimations(HashSet<Integer> helpActions)
+  private void syncAnimations()
   {
     for (int i = 0; i < animations.size(); i++)
     {
@@ -242,8 +242,8 @@ public class DrawView extends View
     {
       paints.text.setTextSize(40 * dk);
       paints.text.setColor(paints.controlColor);
-      float sx1 = 60 * dk;
-      float sx2 = 260 * dk;
+      float sx1 = cupRect.left - offsets.left + 60 * dk;
+      float sx2 = cupRect.left - offsets.left + 260 * dk;
       paints.text.setTextAlign(Paint.Align.LEFT);
       canvas.drawText("best score      best level", sx1, offsets.top, paints.text);
       paints.text.setTextSize(50 * dk);
@@ -263,7 +263,7 @@ public class DrawView extends View
     paints.control.setStyle(Paint.Style.STROKE);
     paints.control.setStrokeWidth(8);
     float r = (float) startTouch.height() / 2;
-    canvas.drawCircle(startTouch.left, startTouch.top + r, r, paints.control);
+    canvas.drawCircle(startTouch.left + r, startTouch.top + r, r, paints.control);
   }
 
   private void drawGameInfo(Canvas canvas)
@@ -315,16 +315,19 @@ public class DrawView extends View
   {
     canvas.drawLines(cupEdges, paints.cupEdge);   // cup edges
 
-    paints.cupContents.setColor(paints.figureColor);    // figures
-    for (Figure figure : new Figure[]{game.currentFigure, game.nextFigure})
-      for (int y = 0; y < Figure.SIZE; y++)
-        for (int x = 0; x < Figure.SIZE; x++)
-          if (figure != null && figure.getCurrContents()[y][x])
-            if (figure == game.currentFigure)
-              drawCupSquare(canvas, figure.pos.x + x, figure.pos.y + y, true);
-            else
-              drawNextFigureSquare(canvas, x, y, figure.alignShift());
+    float sw = paints.cupEdge.getStrokeWidth();
+    int c = paints.cupEdge.getColor();
+    paints.cupEdge.setStrokeWidth(sw / 3);
+    paints.cupEdge.setColor(Color.WHITE);
+    canvas.drawLine(cupRect.left - sw / 2 - dk, cupRect.top, cupRect.left - sw / 2 - dk, cupRect.bottom, paints.cupEdge);
+    canvas.drawLine(cupRect.right + sw / 2 - dk, cupRect.top, cupRect.right + sw / 2 - dk, cupRect.bottom, paints.cupEdge);
+    canvas.drawLine(cupRect.left - sw, cupRect.bottom + sw / 2, cupRect.right + sw, cupRect.bottom + sw / 2, paints.cupEdge);
+    paints.cupEdge.setStrokeWidth(sw);
+    paints.cupEdge.setColor(c);
 
+    paints.cupContents.setColor(paints.figureColor);    // figures
+    drawFigure(canvas, game.currentFigure);
+    drawFigure(canvas, game.nextFigure);
     if (game.state == Game.STATE_PAUSED)
       return;
 
@@ -338,6 +341,17 @@ public class DrawView extends View
           drawCupSquare(canvas, x, y, !isRowComplete && game.cup.contents[y][x] == 1);
         }
     }
+  }
+
+  private void drawFigure(Canvas canvas, Figure figure)
+  {
+    for (int y = 0; y < Figure.SIZE; y++)
+      for (int x = 0; x < Figure.SIZE; x++)
+        if (figure != null && figure.getCurrContents()[y][x])
+          if (figure == game.currentFigure)
+            drawCupSquare(canvas, figure.pos.x + x, figure.pos.y + y, true);
+          else
+            drawNextFigureSquare(canvas, x, y, figure.alignShift());
   }
 
   private void drawCupSquare(Canvas canvas, int x, int y, boolean border)    // draw cupSquare on position
