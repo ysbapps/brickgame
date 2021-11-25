@@ -44,6 +44,7 @@ public class DrawView extends View
   public static HashMap<Integer, Integer> figures = new HashMap<>();
 
   private final Bitmap bg;
+  private final Bitmap pauseBg;
   private final Bitmap left;
   private final Bitmap right;
   private final Bitmap rotate;
@@ -61,6 +62,7 @@ public class DrawView extends View
     options.inJustDecodeBounds = false;
     bg = BitmapFactory.decodeResource(getResources(), R.drawable.bg, options);
     System.out.println("bg: " + bg.getWidth() + 'x' + bg.getHeight());
+    pauseBg = BitmapFactory.decodeResource(getResources(), R.drawable.pause_bg, options);
     left = BitmapFactory.decodeResource(getResources(), R.drawable.left, options);
     right = BitmapFactory.decodeResource(getResources(), R.drawable.right, options);
     rotate = BitmapFactory.decodeResource(getResources(), R.drawable.rotate, options);
@@ -180,7 +182,7 @@ public class DrawView extends View
     canvas.drawColor(Color.BLACK);
     int bx = bounds.width() > bg.getWidth() ? (bounds.width() - bg.getWidth()) / 2 : 0;
     int by = cupRect.height() > bg.getHeight() ? (cupRect.height() - bg.getHeight()) / 2 : 0;
-    canvas.drawBitmap(bg, bx, by, paints.cupContents);
+    canvas.drawBitmap(game.state == Game.STATE_PAUSED ? pauseBg : bg, bx, by, paints.cupContents);
 
     if (game.state == Game.STATE_NOT_STARTED)
     {
