@@ -27,6 +27,7 @@ public class DrawView extends View
   private Rect cupRect;
   private float[] cupEdges;
   private Rect startTouch;
+  private Rect continueTouch;
   private Rect pauseTouch;
   private Rect quitGameTouch;
 
@@ -97,6 +98,8 @@ public class DrawView extends View
     int cx = cupRect.left;
     int cy = bounds.bottom - Math.round(420 * dk);
     startTouch = new Rect(cx, cy, cx + r, cy + r);
+    cy += Math.round(1.5 * r);
+    continueTouch = new Rect(cx, cy, cx + r, cy + r);
 
     int pauseSquare = Math.min(cupRect.left, 180);
     int sx = cupRect.right;
@@ -125,7 +128,9 @@ public class DrawView extends View
     if (game.state == Game.STATE_NOT_STARTED && touch.action == Touch.ACTION_UP)
     {
       if (startTouch.contains(x, y))
-        game.newGame();
+        game.newGame((byte) 1);
+      else if (continueTouch.contains(x, y))
+        game.newGame(game.scores.getMaxAchievedLevel());
 
       performClick();
     }
@@ -169,6 +174,8 @@ public class DrawView extends View
         else if (bounds.contains(x, y) && touch.dist > 3 * minSlideDist && touch.dir == Touch.DIR_DOWN)
           game.action(Game.DROP);
       }
+
+      performClick();
     }
 
     return true;
@@ -187,9 +194,9 @@ public class DrawView extends View
     canvas.drawBitmap(bgs[ii], bx, by, paints.cupContents);
 
     if (game.state == Game.STATE_NOT_STARTED)
-    {
       drawStartPage(canvas);
-    }
+//    else if (game.state == Game.STATE_CHOOSE_LEVEL)
+//      drawChooseLevelScreen(canvas);
     else    // game in progress
     {
       drawGameControls(canvas);
@@ -262,9 +269,41 @@ public class DrawView extends View
     paints.control.setColor(paints.controlColor);
     paints.control.setStyle(Paint.Style.STROKE);
     paints.control.setStrokeWidth(8);
+    paints.text.setTextSize(50 * dk);
+    paints.text.setTextAlign(Paint.Align.LEFT);
+    paints.text.setColor(Color.WHITE);
     float r = (float) startTouch.height() / 2;
     canvas.drawCircle(startTouch.left + r, startTouch.top + r, r, paints.control);
+    canvas.drawText("start new game", startTouch.left + 2.5f * r, startTouch.top + 1.25f * r, paints.text);
+    if (game.scores.getMaxAchievedLevel() > 1)
+    {
+      canvas.drawCircle(continueTouch.left + r, continueTouch.top + r, r, paints.control);
+      canvas.drawText("continue game", continueTouch.left + 2.5f * r, continueTouch.top + 1.25f * r, paints.text);
+      paints.text.setTextSize(70 * dk);
+      paints.text.setTextAlign(Paint.Align.CENTER);
+      paints.text.setColor(Color.BLUE);
+      canvas.drawText("" + game.scores.getMaxAchievedLevel(), continueTouch.left + r, continueTouch.top + 1.4f * r, paints.text);
+    }
+
+    canvas.drawCircle(startTouch.left + 11 * r, startTouch.top + r, r, paints.control); // options
   }
+
+//  private void drawChooseLevelScreen(Canvas canvas)
+//  {
+//    paints.control.setColor(paints.controlColor);
+//    paints.control.setStyle(Paint.Style.STROKE);
+//    paints.control.setStrokeWidth(8);
+//    paints.text.setTextSize(70 * dk);
+//    paints.text.setTextAlign(Paint.Align.CENTER);
+//    paints.text.setColor(Color.BLUE);
+//    float r = (float) startTouch.height() / 2;
+//    int sx =
+//    for (int x = 0; x<3;x++)
+//    for (int y = 0; y<10;y++)
+//    canvas.drawCircle(startTouch.left + r, startTouch.top + r, r, paints.control);
+//
+//
+//  }
 
   private void drawGameInfo(Canvas canvas)
   {

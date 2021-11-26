@@ -94,4 +94,13 @@ class Scores
     }
   }
 
+  byte getMaxAchievedLevel()
+  {
+    byte max = 0;
+    for (byte v : levelTable)
+      if (max < v)
+        max = v;
+
+    return max;
+  }
 }

@@ -11,6 +11,7 @@ public class Game extends Thread
   final static int STATE_PAUSED = 2;
   final static int STATE_DROPPING = 3;
   final static int STATE_GAME_OVER = 4;
+//  final static int STATE_CHOOSE_LEVEL = 5;
 
   final static int MOVE_LEFT = 1;
   final static int MOVE_RIGHT = 2;
@@ -61,13 +62,13 @@ public class Game extends Thread
       view.postInvalidate();
   }
 
-  void newGame()
+  void newGame(byte level)
   {
     if (state != STATE_NOT_STARTED)
       return;
 
     levelStarted = System.currentTimeMillis();
-    level = 1;
+    this.level = level;
     score = 0;
     prize = 0;
     message = null;
@@ -185,6 +186,12 @@ public class Game extends Thread
 
     repaint();
   }
+
+//  void openChooseLevel()
+//  {
+//    state = STATE_CHOOSE_LEVEL;
+//    repaint();
+//  }
 
   private void merge(int mergedRows)
   {
