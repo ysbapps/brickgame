@@ -154,14 +154,14 @@ public class DrawView extends View
           }
           else if (quitGameTouch.contains(x, y))
             game.quitToStartPage();
-          else if (x > cupRect.right && y < cupRect.top)
+          else if (x > cupRect.right && y < cupRect.top)    // todo: debug
           {
             game.level++;
             game.cup.loadLevel(game.level);
           }
-          else if (touch.y > cupRect.top && touch.x < bounds.width() / 2f - cupSquare * dk / 2)
+          else if (touch.y > cupRect.top && touch.x < bounds.width() / 2f - cupSquare * dk / 4)
             game.action(Game.MOVE_LEFT);
-          else if (touch.y > cupRect.top && touch.x > bounds.width() / 2f + cupSquare * dk / 2)
+          else if (touch.y > cupRect.top && touch.x > bounds.width() / 2f + cupSquare * dk / 4)
             game.action(Game.MOVE_RIGHT);
         }
         else if (bounds.contains(x, y) && touch.dist > minSlideDist / 2 && touch.dir == Touch.DIR_UP)

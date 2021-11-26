@@ -98,11 +98,13 @@ public class Game extends Thread
 
         if (state == STATE_GAME)
         {
-          int delay = 800 - speed() * 50;    // 750 -> 300 (at speed 10) -> 0 (at speed 16)
+          int delay = 800 - speed() * 50;    // 750 (speed 1) -> 550 (speed 5) -> 300(10) -> 250(11)->200(12)->150(13) -> 0 (at speed 16)
+          if (delay < 300)    // 300(10) -> 275(11)->220(12)->165(13)
+            delay = (int) (1.1 * delay);
           while (delay-- > 0 && state == STATE_GAME && isAlive)
           {
             sleepMs(1);
-            if (delay == 100 * (int) (delay / 100.0))
+            if (delay % 50 == 0)
               repaint();
           }
         }
@@ -315,7 +317,7 @@ public class Game extends Thread
     if (state != STATE_GAME)
       return lastActionTime - levelStarted - wasOnPause;
     else
-      return System.currentTimeMillis() - levelStarted - wasOnPause;
+      return System.currentTimeMillis() - levelStarted - wasOnPause;// + 600000;
   }
 
   int speed()
