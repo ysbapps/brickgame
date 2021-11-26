@@ -192,7 +192,7 @@ public class DrawView extends View
     }
     else    // game in progress
     {
-      drawGeneralControls(canvas);
+      drawGameControls(canvas);
       drawCup(canvas);
       drawGameInfo(canvas);
 
@@ -401,14 +401,14 @@ public class DrawView extends View
     canvas.drawRect(sx + x * square, sy + y * square, sx + (x + 1) * square, sy + (y + 1) * square, paints.cupContents);
   }
 
-  private void drawGeneralControls(Canvas canvas)
+  private void drawGameControls(Canvas canvas)
   {
     paints.control.setColor(paints.controlColor);
     int x1 = pauseTouch.centerX() - pauseTouch.width() / 11;
     int x2 = pauseTouch.centerX() + pauseTouch.width() / 11;
     int y1 = pauseTouch.centerY() - pauseTouch.height() / 6;
     int y2 = pauseTouch.centerY() + pauseTouch.height() / 6;
-    if (game.state == Game.STATE_PAUSED)
+    if (game.state == Game.STATE_PAUSED && game.hasMoreLevels())
     {
       Path path = new Path();
       path.moveTo(x1, y1);
@@ -443,7 +443,7 @@ public class DrawView extends View
       canvas.drawLine(x2, y1, x2, y2, paints.control);    // pause
     }
 
-    if (game.state == Game.STATE_GAME || game.state == Game.STATE_PAUSED)
+    if (game.state == Game.STATE_GAME || (game.state == Game.STATE_PAUSED && game.hasMoreLevels()))
     {
       paints.control.setStrokeWidth(8);
       paints.control.setStyle(Paint.Style.STROKE);

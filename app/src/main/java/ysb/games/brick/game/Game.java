@@ -33,7 +33,7 @@ public class Game extends Thread
 
   private int figureCount = 0;
   private long figureStartTime;
-  private HashSet<Integer> figureActions = new HashSet<>();
+  private final HashSet<Integer> figureActions = new HashSet<>();
 
   Scores scores;
 
@@ -108,10 +108,8 @@ public class Game extends Thread
               repaint();
           }
         }
-        else if (state == STATE_DROPPING)
+        else //if (state == STATE_DROPPING)
           sleepMs(10);
-        else
-          throw new Exception("Invalid state");
 
         currentFigure.pos.y++;
         if (cup.isFigurePositionValid(currentFigure))      // end of normal loop (figure is falling or dropping)
@@ -277,20 +275,27 @@ public class Game extends Thread
     message = null;
     repaint();
     sleepMs(500);
-    level++;
-    if (cup.loadLevel(level))
-      message = "Level " + level;
+    if (hasMoreLevels())
+    {
+      level++;
+      if (cup.loadLevel(level))
+        message = "Level " + level;
+      repaint();
+      sleepMs(2000);
+      message = null;
+      levelStarted = System.currentTimeMillis();
+      wasOnPause = 0;
+    }
     else
     {
-
-//      state = STATE_NO_MORE_LEVELS;
-//              tetris.updateScores("", score, true);
+      state = STATE_PAUSED;
+      message = "All levels completed";
     }
-    repaint();
-    sleepMs(2000);
-    message = null;
-    levelStarted = System.currentTimeMillis();
-    wasOnPause = 0;
+  }
+
+  boolean hasMoreLevels()
+  {
+    return level < 30;
   }
 
   private void sleepMs(long ms)
