@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.media.MediaPlayer;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -26,10 +27,11 @@ public class DrawView extends View
   private float cupSquare;
   private Rect cupRect;
   private float[] cupEdges;
-  private Rect startTouch;
-  private Rect continueTouch;
   private Rect pauseTouch;
   private Rect quitGameTouch;
+  private Button startBtn;
+  private Button contBtn;
+  private Button optionsBtn;
 
   private Paints paints;
   private float dk;
@@ -65,6 +67,8 @@ public class DrawView extends View
     bgs[1] = BitmapFactory.decodeResource(getResources(), R.drawable.bg, options);
     System.out.println("bg: " + bgs[1].getWidth() + 'x' + bgs[1].getHeight());
     bgs[2] = BitmapFactory.decodeResource(getResources(), R.drawable.pause_bg, options);
+
+    options.inSampleSize = 4;
     left = BitmapFactory.decodeResource(getResources(), R.drawable.left, options);
     right = BitmapFactory.decodeResource(getResources(), R.drawable.right, options);
     rotate = BitmapFactory.decodeResource(getResources(), R.drawable.rotate, options);
@@ -94,12 +98,15 @@ public class DrawView extends View
         cupRect.left, cupRect.bottom + cupEdgeWidth / 2, cupRect.right, cupRect.bottom + cupEdgeWidth / 2,
         cupRect.right + cupEdgeWidth / 2, cupRect.bottom + cupEdgeWidth, cupRect.right + cupEdgeWidth / 2, cupRect.top};
 
-    int r = Math.round(120 * dk);
-    int cx = cupRect.left;
-    int cy = bounds.bottom - Math.round(420 * dk);
-    startTouch = new Rect(cx, cy, cx + r, cy + r);
-    cy += Math.round(1.5 * r);
-    continueTouch = new Rect(cx, cy, cx + r, cy + r);
+    BitmapFactory.Options options = new BitmapFactory.Options();
+    options.inSampleSize = 2;
+    options.inJustDecodeBounds = false;
+
+    startBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.start, options), cupRect.left - 80 * dk, bounds.bottom - Math.round(700 * dk));
+    contBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.cont, options), cupRect.left - 80 * dk, startBtn.rect.bottom + 50 * dk);
+
+    options.inSampleSize = 4;
+    optionsBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.options, options), cupRect.right - 30 * dk, bounds.bottom - Math.round(300 * dk));
 
     int pauseSquare = Math.min(cupRect.left, 180);
     int sx = cupRect.right;
@@ -127,11 +134,14 @@ public class DrawView extends View
     int y = touch.y;
     if (game.state == Game.STATE_NOT_STARTED && touch.action == Touch.ACTION_UP)
     {
-      if (startTouch.contains(x, y))
+      if (startBtn.rect.contains(x, y))
         game.newGame((byte) 1);
-      else if (continueTouch.contains(x, y))
+      else if (contBtn.rect.contains(x, y))
         game.newGame(game.scores.getMaxAchievedLevel());
+      else if (optionsBtn.rect.contains(x, y))
+        game.newGame((byte) 1);
 
+      play(R.raw.click);
       performClick();
     }
     else    // game is started
@@ -141,6 +151,7 @@ public class DrawView extends View
           (touch.dir == Touch.DIR_LEFT || touch.dir == Touch.DIR_RIGHT) && bounds.contains(x, y))    // touch down and touch move belong to the control rect
       {
         game.action(touch.dir == Touch.DIR_LEFT ? Game.MOVE_LEFT : Game.MOVE_RIGHT);
+        play(R.raw.long_move);
         touch.movedLeftRight();
       }
       else if (touch.action == Touch.ACTION_UP && !touch.movedLeftRight)
@@ -156,18 +167,31 @@ public class DrawView extends View
             }
             else if (game.state == Game.STATE_PAUSED)
               game.resumeFromPause();
+
+            play(R.raw.click);
           }
           else if (quitGameTouch.contains(x, y))
+          {
             game.quitToStartPage();
+            play(R.raw.click);
+          }
           else if (x > cupRect.right && y < cupRect.top)    // todo: debug
           {
             game.level++;
             game.cup.loadLevel(game.level);
           }
           else if (touch.y > cupRect.top && touch.x < bounds.width() / 2f - cupSquare * dk / 4)
+          {
             game.action(Game.MOVE_LEFT);
+            play(R.raw.move);
+          }
           else if (touch.y > cupRect.top && touch.x > bounds.width() / 2f + cupSquare * dk / 4)
+          {
             game.action(Game.MOVE_RIGHT);
+            play(R.raw.move);
+          }
+
+          performClick();
         }
         else if (bounds.contains(x, y) && touch.dist > minSlideDist / 2 && touch.dir == Touch.DIR_UP)
           game.action(Game.ROTATE);
@@ -175,7 +199,6 @@ public class DrawView extends View
           game.action(Game.DROP);
       }
 
-      performClick();
     }
 
     return true;
@@ -272,20 +295,26 @@ public class DrawView extends View
     paints.text.setTextSize(50 * dk);
     paints.text.setTextAlign(Paint.Align.LEFT);
     paints.text.setColor(Color.WHITE);
-    float r = (float) startTouch.height() / 2;
-    canvas.drawCircle(startTouch.left + r, startTouch.top + r, r, paints.control);
-    canvas.drawText("start new game", startTouch.left + 2.5f * r, startTouch.top + 1.25f * r, paints.text);
+    startBtn.draw(canvas);
+//    canvas.drawText("start new game", startBtn.rect.right + dk * 20, startBtn.rect.centerY() + dk * 18, paints.text);
     if (game.scores.getMaxAchievedLevel() > 1)
     {
-      canvas.drawCircle(continueTouch.left + r, continueTouch.top + r, r, paints.control);
-      canvas.drawText("continue game", continueTouch.left + 2.5f * r, continueTouch.top + 1.25f * r, paints.text);
-      paints.text.setTextSize(70 * dk);
+      contBtn.draw(canvas);
+//      canvas.drawText("continue game", contBtn.rect.right + dk * 20, contBtn.rect.centerY() + dk * 18, paints.text);
+      paints.text.setTextSize(60 * dk);
       paints.text.setTextAlign(Paint.Align.CENTER);
-      paints.text.setColor(Color.BLUE);
-      canvas.drawText("" + game.scores.getMaxAchievedLevel(), continueTouch.left + r, continueTouch.top + 1.4f * r, paints.text);
+      paints.text.setColor(Color.rgb(80, 80, 255));
+      float x = contBtn.rect.centerX() + 10 * dk;
+      float y = contBtn.rect.centerY() + dk * 18;
+      String lvl = "" + game.scores.getMaxAchievedLevel();
+      paints.text.setColor(Color.BLACK);
+      canvas.drawText(lvl, x + 4 * dk, y + 4 * dk, paints.text);
+      paints.text.setColor(Color.WHITE);
+      canvas.drawText(lvl, x, y, paints.text);
+
     }
 
-    canvas.drawCircle(startTouch.left + 11 * r, startTouch.top + r, r, paints.control); // options
+    optionsBtn.draw(canvas);
   }
 
 //  private void drawChooseLevelScreen(Canvas canvas)
@@ -488,6 +517,12 @@ public class DrawView extends View
       paints.control.setStyle(Paint.Style.STROKE);
       canvas.drawCircle(pauseTouch.centerX(), pauseTouch.centerY(), (float) pauseTouch.width() / 3, paints.control);    // pause or resume
     }
+  }
+
+  void play(int id)
+  {
+    MediaPlayer mediaPlayer = MediaPlayer.create(getContext(), id);
+    mediaPlayer.start();
   }
 
   private void drawDebugInfo(Canvas canvas)

@@ -3,6 +3,7 @@ package ysb.games.brick.game;
 import java.util.HashSet;
 
 import ysb.games.brick.MainBrickActivity;
+import ysb.games.brick.R;
 
 public class Game extends Thread
 {
@@ -120,8 +121,10 @@ public class Game extends Thread
         currentFigure.movable = false;
         cup.appendFigure(currentFigure);
         if (state == STATE_DROPPING)
+        {
           state = STATE_GAME;
-
+          view.play(R.raw.drop);
+        }
         repaint();
         sleepMs(100);
 
@@ -195,6 +198,7 @@ public class Game extends Thread
 
   private void merge(int mergedRows)
   {
+    view.play(R.raw.remove_line);
     prize = Math.round(level * speed() * mergedRows * mergedRows);
     for (prizeCycle = 0; prizeCycle < 200; prizeCycle++)
     {
@@ -237,6 +241,8 @@ public class Game extends Thread
         currentFigure.rotate();
         if (!cup.isFigurePositionValid(currentFigure))
           currentFigure.rotateBack();
+        else
+          view.play(R.raw.rotate);
         break;
       case DROP:
         state = STATE_DROPPING;
@@ -269,6 +275,7 @@ public class Game extends Thread
 
   private void nextLevel()
   {
+    view.play(R.raw.level);
     currentFigure = null;
     figureCount = 0;
     repaint();
