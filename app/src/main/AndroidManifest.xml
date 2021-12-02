@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-        package="ysb.games.brick">
+        package="ysb.apps.games.brick">
 
     <application
             android:allowBackup="true"
@@ -10,7 +10,7 @@
             android:supportsRtl="true"
             android:theme="@style/Theme.AppCompat.NoActionBar">
         <activity
-                android:name="ysb.games.brick.MainBrickActivity"
+                android:name="ysb.apps.games.brick.MainBrickActivity"
                 android:screenOrientation="portrait"
                 android:exported="true">
             <intent-filter>

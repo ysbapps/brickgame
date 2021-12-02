@@ -1,4 +1,4 @@
-package ysb.games.brick.game;
+package ysb.apps.games.brick.game;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -16,7 +16,7 @@ import android.view.View;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import ysb.games.brick.R;
+import ysb.apps.games.brick.R;
 
 public class DrawView extends View
 {

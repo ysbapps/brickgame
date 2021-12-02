@@ -1,12 +1,12 @@
-package ysb.games.brick;
+package ysb.apps.games.brick;
 
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 
-import ysb.games.brick.game.DrawView;
-import ysb.games.brick.game.Game;
+import ysb.apps.games.brick.game.DrawView;
+import ysb.apps.games.brick.game.Game;
 
 public class MainBrickActivity extends AppCompatActivity
 {

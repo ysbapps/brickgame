@@ -1,9 +1,9 @@
-package ysb.games.brick.game;
+package ysb.apps.games.brick.game;
 
 import java.util.HashSet;
 
-import ysb.games.brick.MainBrickActivity;
-import ysb.games.brick.R;
+import ysb.apps.games.brick.MainBrickActivity;
+import ysb.apps.games.brick.R;
 
 public class Game extends Thread
 {

@@ -1,4 +1,4 @@
-package ysb.games.brick.game;
+package ysb.apps.games.brick.game;
 
 import android.content.res.AssetManager;
 

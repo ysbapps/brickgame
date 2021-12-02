@@ -1,8 +1,8 @@
-package ysb.games.brick;
+package ysb.apps.games.brick;
 
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
-import ysb.games.brick.game.Game;
+import ysb.apps.games.brick.game.Game;
 
 public class GameFragment extends Fragment
 {

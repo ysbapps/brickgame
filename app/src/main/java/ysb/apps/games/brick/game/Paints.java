@@ -1,4 +1,4 @@
-package ysb.games.brick.game;
+package ysb.apps.games.brick.game;
 
 import android.graphics.Color;
 import android.graphics.Paint;
