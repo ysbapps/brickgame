@@ -11,6 +11,7 @@ public class Button
   private final Bitmap image;
   final RectF rect;
   private final Paint p = new Paint();
+  boolean enabled = true;
 
 
   Button(Bitmap image, float x, float y)
@@ -27,6 +28,7 @@ public class Button
 
   void draw(Canvas canvas)
   {
+    p.setAlpha(enabled ? 255 : 128);
     if (image != null)
       canvas.drawBitmap(image, rect.left, rect.top, p);
     else
