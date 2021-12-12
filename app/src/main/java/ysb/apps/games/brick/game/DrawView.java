@@ -270,7 +270,7 @@ public class DrawView extends View
         float lry = cupRect.bottom - 400 * dk;
         float rdx = cupRect.centerX() - rotate.getWidth() / 2f;
         PointF[] pa = {null, new PointF(cupRect.centerX() - left.getWidth() - 100 * dk, lry), new PointF(cupRect.centerX() + 100 * dk, lry),
-            new PointF(rdx, lry - 300 * dk), new PointF(rdx, lry)};
+            new PointF(rdx, lry - 300 * dk), new PointF(rdx, lry - 50 * dk)};
         animations.put(id, new Animation(ba[id], pa[id], 1000));
       }
   }
