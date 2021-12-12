@@ -30,6 +30,8 @@ public class DrawView extends View
   private Button pauseBtn;
   private Button resumeBtn;
   private Button quitGameBtn;
+  private Button sndOnBtn;
+  private Button sndOffBtn;
   private Button startBtn;
   private Button contBtn;
   private Button optionsBtn;
@@ -54,6 +56,8 @@ public class DrawView extends View
   private final Bitmap drop;
   private final HashSet<Integer> helpActions = new HashSet<>();
   private final HashMap<Integer, Animation> animations = new HashMap<>();
+
+  private boolean soundsOn = true;
 
 
   public DrawView(Context context)
@@ -107,9 +111,12 @@ public class DrawView extends View
     options.inSampleSize = dk < 0.8 ? 2 : 1;
     options.inJustDecodeBounds = false;
     pauseBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.pause, options), cupRect.right + 20 * dk, cupRect.top + 470 * dk);
-    resumeBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.cont, options), pauseBtn.rect.left, pauseBtn.rect.top);
+    resumeBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.resume, options), pauseBtn.rect.left, pauseBtn.rect.top);
     Bitmap img = BitmapFactory.decodeResource(getResources(), R.drawable.quit, options);
-    quitGameBtn = new Button(img, cupRect.left - img.getWidth() - 18 * dk, pauseBtn.rect.top);
+    float lx = cupRect.left - img.getWidth() - 18 * dk;
+    quitGameBtn = new Button(img, lx, pauseBtn.rect.top);
+    sndOnBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.snd_on, options), lx, pauseBtn.rect.top);
+    sndOffBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.snd_off, options), lx, pauseBtn.rect.top);
 
     paints = new Paints(cupEdgeWidth);
   }
@@ -153,7 +160,7 @@ public class DrawView extends View
       }
       else if (touch.action == Touch.ACTION_UP && !touch.movedLeftRight)
       {
-        if (touch.dist < minSlideDist / 2)   // click
+        if (touch.dist < minSlideDist / 2)   // click   todo
         {
           if (pauseBtn.rect.contains(x, y))
           {
@@ -167,6 +174,11 @@ public class DrawView extends View
 
             play(R.raw.click);
           }
+          else if (sndOnBtn.rect.contains(x, y))
+          {
+            soundsOn = !soundsOn;
+            play(R.raw.click);
+          }
           else if (quitGameBtn.rect.contains(x, y))
           {
             game.quitToStartPage();
@@ -177,7 +189,7 @@ public class DrawView extends View
             game.level++;
             game.cup.loadLevel(game.level);
           }
-          else if (touch.y > cupRect.top && touch.x < bounds.width() / 2f - cupSquare * dk / 4)
+          else if (touch.y > cupRect.top && touch.x < bounds.width() / 2f - cupSquare * dk / 4)   // todo
           {
             game.action(Game.MOVE_LEFT);
             play(R.raw.move);
@@ -476,13 +488,22 @@ public class DrawView extends View
       quitGameBtn.draw(canvas);
 
     if (game.state == Game.STATE_GAME)
+    {
       pauseBtn.draw(canvas);
+      if (soundsOn)
+        sndOffBtn.draw(canvas);
+      else
+        sndOnBtn.draw(canvas);
+    }
   }
 
   void play(int id)
   {
-    MediaPlayer mediaPlayer = MediaPlayer.create(getContext(), id);
-    mediaPlayer.start();
+    if (soundsOn)
+    {
+      MediaPlayer mediaPlayer = MediaPlayer.create(getContext(), id);
+      mediaPlayer.start();
+    }
   }
 
   private void drawDebugInfo(Canvas canvas)
