@@ -21,7 +21,7 @@ public class Animation
     started = System.currentTimeMillis();
   }
 
-  void update(Canvas canvas)
+  void draw(Canvas canvas)
   {
     int a = Math.round(255f * (System.currentTimeMillis() - started) / dur);
     Paint p = new Paint();

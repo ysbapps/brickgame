@@ -241,7 +241,7 @@ public class DrawView extends View
         syncAnimations();
 //        System.out.println(animations);
         for (Animation animation : animations.values())
-          animation.update(canvas);
+          animation.draw(canvas);
       }
     }
 
@@ -267,9 +267,10 @@ public class DrawView extends View
       if (!animations.containsKey(id))
       {
         Bitmap[] ba = {null, left, right, rotate, drop};
-        float lry = cupRect.bottom - 300 * dk;
+        float lry = cupRect.bottom - 400 * dk;
         float rdx = cupRect.centerX() - rotate.getWidth() / 2f;
-        PointF[] pa = {null, new PointF(cupRect.left, lry), new PointF(cupRect.right - right.getWidth(), lry), new PointF(rdx, lry - 300 * dk), new PointF(rdx, lry)};
+        PointF[] pa = {null, new PointF(cupRect.centerX() - left.getWidth() - 100 * dk, lry), new PointF(cupRect.centerX() + 100 * dk, lry),
+            new PointF(rdx, lry - 300 * dk), new PointF(rdx, lry)};
         animations.put(id, new Animation(ba[id], pa[id], 1000));
       }
   }
