@@ -160,7 +160,7 @@ public class DrawView extends View
       }
       else if (touch.action == Touch.ACTION_UP && !touch.movedLeftRight)
       {
-        if (touch.dist < minSlideDist / 2)   // click   todo
+        if (touch.dist < minSlideDist)   // click
         {
           if (pauseBtn.rect.contains(x, y))
           {
@@ -189,12 +189,12 @@ public class DrawView extends View
             game.level++;
             game.cup.loadLevel(game.level);
           }
-          else if (touch.y > cupRect.top && touch.x < bounds.width() / 2f - cupSquare * dk / 4)   // todo
+          else if (touch.y > cupRect.top && touch.x < bounds.width() / 2f)
           {
             game.action(Game.MOVE_LEFT);
             play(R.raw.move);
           }
-          else if (touch.y > cupRect.top && touch.x > bounds.width() / 2f + cupSquare * dk / 4)
+          else if (touch.y > cupRect.top && touch.x > bounds.width() / 2f)
           {
             game.action(Game.MOVE_RIGHT);
             play(R.raw.move);
