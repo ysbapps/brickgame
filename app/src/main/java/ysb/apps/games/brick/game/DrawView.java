@@ -74,10 +74,10 @@ public class DrawView extends View
     bgs[2] = BitmapFactory.decodeResource(getResources(), R.drawable.pause_bg, options);
 
     options.inSampleSize = 4;
-    left = BitmapFactory.decodeResource(getResources(), R.drawable.left, options);
-    right = BitmapFactory.decodeResource(getResources(), R.drawable.right, options);
-    rotate = BitmapFactory.decodeResource(getResources(), R.drawable.rotate, options);
-    drop = BitmapFactory.decodeResource(getResources(), R.drawable.drop, options);
+    left = BitmapFactory.decodeResource(getResources(), R.drawable.demo_left, options);
+    right = BitmapFactory.decodeResource(getResources(), R.drawable.demo_right, options);
+    rotate = BitmapFactory.decodeResource(getResources(), R.drawable.demo_rotate, options);
+    drop = BitmapFactory.decodeResource(getResources(), R.drawable.demo_drop, options);
   }
 
   private void initialize(Canvas canvas)
@@ -269,7 +269,7 @@ public class DrawView extends View
         Bitmap[] ba = {null, left, right, rotate, drop};
         float lry = cupRect.bottom - 300 * dk;
         float rdx = cupRect.centerX() - rotate.getWidth() / 2f;
-        PointF[] pa = {null, new PointF(cupRect.left, lry), new PointF(cupRect.right - right.getWidth(), lry), new PointF(rdx, lry - 100 * dk), new PointF(rdx, lry)};
+        PointF[] pa = {null, new PointF(cupRect.left, lry), new PointF(cupRect.right - right.getWidth(), lry), new PointF(rdx, lry - 300 * dk), new PointF(rdx, lry)};
         animations.put(id, new Animation(ba[id], pa[id], 1000));
       }
   }

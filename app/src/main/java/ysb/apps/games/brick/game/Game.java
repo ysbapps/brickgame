@@ -266,7 +266,11 @@ public class Game extends Thread
         actions.add(MOVE_LEFT);
         actions.add(MOVE_RIGHT);
       }
-      if (!figureActions.contains(ROTATE) && figureCount < 7 && seconds < 7 + figureCount / 2)
+
+      currentFigure.rotate();
+      boolean canRotate = cup.isFigurePositionValid(currentFigure);
+      currentFigure.rotateBack();
+      if (currentFigure.type != Figure.TYPE_SQUARE && canRotate && !figureActions.contains(ROTATE) && figureCount < 7 && seconds < 7 + figureCount / 2)
         actions.add(ROTATE);
       if (actions.size() == 0 && !figureActions.contains(DROP) && (System.currentTimeMillis() - lastActionTime) / 1000 > 4 + figureCount / 2)
         actions.add(DROP);

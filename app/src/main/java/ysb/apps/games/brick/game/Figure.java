@@ -4,15 +4,15 @@ import android.graphics.Point;
 
 class Figure
 {
-  private final static int TYPE_UNDEFINED = 0;
-  private final static int TYPE_LSTAIR = 1;
-  private final static int TYPE_RSTAIR = 2;
-  private final static int TYPE_PODIUM = 3;
-  private final static int TYPE_LCORNER = 4;
-  private final static int TYPE_RCORNER = 5;
-  private final static int TYPE_SQUARE = 6;
-  private final static int TYPE_LINE = 7;
-  private final static int TYPES = 7;
+  final static int TYPE_UNDEFINED = 0;
+  final static int TYPE_LSTAIR = 1;
+  final static int TYPE_RSTAIR = 2;
+  final static int TYPE_PODIUM = 3;
+  final static int TYPE_LCORNER = 4;
+  final static int TYPE_RCORNER = 5;
+  final static int TYPE_SQUARE = 6;
+  final static int TYPE_LINE = 7;
+  final static int TYPES = 7;
   final static int SIZE = 4;   // figure width/height
   private final static Point START_POS = new Point(3, -2);
 
