@@ -24,6 +24,8 @@ public class Animation
   void draw(Canvas canvas)
   {
     int a = Math.round(255f * (System.currentTimeMillis() - started) / dur);
+    if (a > 255)
+      a = 255;
     Paint p = new Paint();
     p.setAlpha(a);
     canvas.drawBitmap(image, pos.x, pos.y, p);
