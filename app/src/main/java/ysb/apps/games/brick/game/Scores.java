@@ -2,6 +2,7 @@ package ysb.apps.games.brick.game;
 
 import android.content.Context;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -11,10 +12,13 @@ class Scores
 {
   private static final int ROWS = 10;
   private static final String FILE_NAME = "scores.dat";
+  private static final String LEVEL_FILE_NAME = "max_level.dat";
 
   private final Context context;
   ArrayList<Integer> scoreTable = new ArrayList<>();
   ArrayList<Byte> levelTable = new ArrayList<>();
+
+  private byte maxAchievedLevel = 1;
 
 
   Scores(Context context)
@@ -55,17 +59,29 @@ class Scores
   {
     try
     {
-      InputStream is = context.openFileInput(FILE_NAME);
-      byte[] ba = new byte[5 * ROWS];
-      int length = is.read(ba);
-      is.close();
-      int i = 0;
-      while (i < length)
+      if (new File(context.getFilesDir(), FILE_NAME).exists())
       {
-        scoreTable.add(ByteBuffer.wrap(new byte[]{ba[i++], ba[i++], ba[i++], ba[i++]}).getInt());
-        levelTable.add(ba[i++]);
+        InputStream is = context.openFileInput(FILE_NAME);
+        byte[] ba = new byte[5 * ROWS];
+        int length = is.read(ba);
+        is.close();
+        int i = 0;
+        while (i < length)
+        {
+          scoreTable.add(ByteBuffer.wrap(new byte[]{ba[i++], ba[i++], ba[i++], ba[i++]}).getInt());
+          levelTable.add(ba[i++]);
+        }
       }
 
+      if (new File(context.getFilesDir(), LEVEL_FILE_NAME).exists())
+      {
+        InputStream is = context.openFileInput(LEVEL_FILE_NAME);
+        byte[] ba = new byte[1];
+        //noinspection ResultOfMethodCallIgnored
+        is.read(ba);
+        is.close();
+        maxAchievedLevel = ba[0];
+      }
     }
     catch (Exception e)
     {
@@ -94,13 +110,25 @@ class Scores
     }
   }
 
+  void saveMaxLevel(byte level)
+  {
+    maxAchievedLevel = level;
+    try
+    {
+      FileOutputStream outputStream = context.openFileOutput(LEVEL_FILE_NAME, Context.MODE_PRIVATE);
+      ByteBuffer buffer = ByteBuffer.allocate(1);
+      buffer.put(maxAchievedLevel);
+      outputStream.write(buffer.array());
+      outputStream.close();
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+    }
+  }
+
   byte getMaxAchievedLevel()
   {
-    byte max = 0;
-    for (byte v : levelTable)
-      if (max < v)
-        max = v;
-
-    return max;
+    return maxAchievedLevel;
   }
 }

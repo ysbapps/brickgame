@@ -292,6 +292,7 @@ public class Game extends Thread
     if (hasMoreLevels())
     {
       level++;
+      scores.saveMaxLevel(level);
       if (cup.loadLevel(level))
         message = "Level " + level;
       repaint();
