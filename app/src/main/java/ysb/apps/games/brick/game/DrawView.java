@@ -174,12 +174,12 @@ public class DrawView extends View
 
             play(R.raw.click);
           }
-          else if (sndOnBtn.rect.contains(x, y))
+          else if (game.state == Game.STATE_GAME && sndOnBtn.rect.contains(x, y))
           {
             soundsOn = !soundsOn;
             play(R.raw.click);
           }
-          else if (quitGameBtn.rect.contains(x, y))
+          else if (game.state == Game.STATE_PAUSED && quitGameBtn.rect.contains(x, y))
           {
             game.quitToStartPage();
             play(R.raw.click);
