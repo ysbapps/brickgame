@@ -74,8 +74,8 @@ public class Game extends Thread
     prize = 0;
     message = null;
     cup.loadLevel(level);
-    currentFigure = new Figure();
-    nextFigure = new Figure();
+    currentFigure = new Figure(level == 1);
+    nextFigure = new Figure(level == 1);
     figureCount = 0;
     figureActions.clear();
     figureStartTime = lastActionTime = System.currentTimeMillis();
@@ -145,7 +145,7 @@ public class Game extends Thread
           repaint();
         }
 
-        nextFigure = new Figure();
+        nextFigure = new Figure(false);
         repaint();
       }
     }

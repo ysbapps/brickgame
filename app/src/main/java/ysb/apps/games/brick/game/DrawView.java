@@ -148,7 +148,7 @@ public class DrawView extends View
           (touch.dir == Touch.DIR_LEFT || touch.dir == Touch.DIR_RIGHT) && bounds.contains(x, y))    // touch down and touch move belong to the control rect
       {
         game.action(touch.dir == Touch.DIR_LEFT ? Game.MOVE_LEFT : Game.MOVE_RIGHT);
-        play(R.raw.long_move);
+        play(R.raw.move);
         touch.movedLeftRight();
       }
       else if (touch.action == Touch.ACTION_UP && !touch.movedLeftRight)
@@ -509,7 +509,7 @@ public class DrawView extends View
     canvas.drawText("" + touch.down, sx, sy + 210, paints.debugText);
     canvas.drawText("" + touch.dist, sx, sy + 240, paints.debugText);
 
-    Figure f = new Figure();
+    Figure f = new Figure(false);
     Integer n = figures.get(f.type);
     if (n == null)
       figures.put(f.type, 1);

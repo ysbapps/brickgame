@@ -24,11 +24,16 @@ class Figure
   boolean movable = true;
 
 
-  Figure()
+  Figure(boolean square)
   {
-    type = TYPE_UNDEFINED;
-    while (type == TYPE_UNDEFINED || (type == lastFigures[0] && type == lastFigures[1]))
-      type = (int) Math.round(TYPES * Math.random());
+    if (square)
+      type = TYPE_SQUARE;
+    else
+    {
+      type = TYPE_UNDEFINED;
+      while (type == TYPE_UNDEFINED || (type == lastFigures[0] && type == lastFigures[1]))
+        type = (int) Math.round(TYPES * Math.random());
+    }
 
     lastFigures[0] = lastFigures[1];
     lastFigures[1] = type;
