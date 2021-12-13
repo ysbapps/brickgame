@@ -185,7 +185,7 @@ public class DrawView extends View
             sndManager.soundsOn = !sndManager.soundsOn;
             sndManager.play(R.raw.click);
           }
-          else if (game.state == Game.STATE_PAUSED && quitGameBtn.rect.contains(x, y))
+          else if ((game.state == Game.STATE_PAUSED || game.state == Game.STATE_GAME_OVER) && quitGameBtn.rect.contains(x, y))
           {
             game.quitToStartPage();
             sndManager.play(R.raw.click);
@@ -494,7 +494,7 @@ public class DrawView extends View
     if (game.state == Game.STATE_PAUSED || game.state == Game.STATE_GAME_OVER)
       quitGameBtn.draw(canvas);
 
-    if (game.state == Game.STATE_GAME)
+    if (game.state == Game.STATE_GAME || game.state == Game.STATE_DROPPING)
     {
       pauseBtn.draw(canvas);
       if (sndManager.soundsOn)
