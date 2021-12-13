@@ -24,7 +24,7 @@ public class Game extends Thread
   int state = STATE_NOT_STARTED;
   Figure currentFigure;
   Figure nextFigure;
-  private long levelStarted;
+  long levelStarted;
   private long lastActionTime;
   private long wasOnPause;
   byte level;
@@ -100,6 +100,14 @@ public class Game extends Thread
 
         if (state == STATE_GAME)
         {
+          if (System.currentTimeMillis() < levelStarted + 1000)
+          {
+            message = "Level " + level;
+            repaint();
+            sleepMs(1000);
+            message = null;
+          }
+
           int delay = 800 - speed() * 50;    // 750 (speed 1) -> 550 (speed 5) -> 300(10) -> 250(11)->200(12)->150(13) -> 0 (at speed 16)
           if (delay < 300)    // 300(10) -> 275(11)->220(12)->165(13)
             delay = (int) (1.1 * delay);
@@ -300,7 +308,7 @@ public class Game extends Thread
       if (cup.loadLevel(level))
         message = "Level " + level;
       repaint();
-      sleepMs(2000);
+      sleepMs(1000);
       message = null;
       levelStarted = System.currentTimeMillis();
       wasOnPause = 0;

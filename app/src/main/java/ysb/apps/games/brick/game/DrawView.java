@@ -156,8 +156,9 @@ public class DrawView extends View
     }
     else    // game is started
     {
+      boolean isFigure = game.currentFigure != null && (System.currentTimeMillis() > game.levelStarted + 1000);
       double minSlideDist = 0.7 * cupSquare * dk;
-      if (touch.action == Touch.ACTION_MOVE && touch.dist > minSlideDist &&
+      if (isFigure && touch.action == Touch.ACTION_MOVE && touch.dist > minSlideDist &&
           (touch.dir == Touch.DIR_LEFT || touch.dir == Touch.DIR_RIGHT) && bounds.contains(x, y))    // touch down and touch move belong to the control rect
       {
         game.action(touch.dir == Touch.DIR_LEFT ? Game.MOVE_LEFT : Game.MOVE_RIGHT);
@@ -195,12 +196,12 @@ public class DrawView extends View
             game.level++;
             game.cup.loadLevel(game.level);
           }
-          else if (touch.y > cupRect.top && touch.x < bounds.width() / 2f)
+          else if (isFigure && touch.y > cupRect.top && touch.x < bounds.width() / 2f)
           {
             game.action(Game.MOVE_LEFT);
             sndManager.play(R.raw.move);
           }
-          else if (touch.y > cupRect.top && touch.x > bounds.width() / 2f)
+          else if (isFigure && touch.y > cupRect.top && touch.x > bounds.width() / 2f)
           {
             game.action(Game.MOVE_RIGHT);
             sndManager.play(R.raw.move);
@@ -208,12 +209,11 @@ public class DrawView extends View
 
           performClick();
         }
-        else if (bounds.contains(x, y) && touch.dist > minSlideDist / 2 && touch.dir == Touch.DIR_UP)
+        else if (isFigure && bounds.contains(x, y) && touch.dist > minSlideDist / 2 && touch.dir == Touch.DIR_UP)
           game.action(Game.ROTATE);
-        else if (bounds.contains(x, y) && touch.dist > 3 * minSlideDist && touch.dir == Touch.DIR_DOWN)
+        else if (isFigure && bounds.contains(x, y) && touch.dist > 3 * minSlideDist && touch.dir == Touch.DIR_DOWN)
           game.action(Game.DROP);
       }
-
     }
 
     return true;
@@ -410,8 +410,11 @@ public class DrawView extends View
     paints.cupEdge.setColor(c);
 
     paints.cupContents.setColor(paints.figureColor);    // figures
-    drawFigure(canvas, game.currentFigure);
+    if (System.currentTimeMillis() > game.levelStarted + 1000)
+      drawFigure(canvas, game.currentFigure);
+
     drawFigure(canvas, game.nextFigure);
+
     if (game.state == Game.STATE_PAUSED)
       return;
 
