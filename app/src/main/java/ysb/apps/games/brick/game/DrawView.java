@@ -320,15 +320,14 @@ public class DrawView extends View
 //      canvas.drawText("continue game", contBtn.rect.right + dk * 20, contBtn.rect.centerY() + dk * 18, paints.text);
       paints.text.setTextSize(74 * dk);
       paints.text.setTextAlign(Paint.Align.CENTER);
-      paints.text.setColor(Color.rgb(80, 80, 255));
       float x = contBtn.rect.centerX() - 10 * dk;
       float y = contBtn.rect.centerY() + dk * 26;
       String lvl = "" + game.scores.getMaxAchievedLevel();
       paints.text.setColor(Color.BLACK);
       canvas.drawText(lvl, x + 4 * dk, y + 4 * dk, paints.text);
-      paints.text.setColor(Color.rgb(255, 255, 180));
+//      paints.text.setColor(Color.rgb(255, 255, 180));
+      paints.text.setColor(Color.rgb(100, 100, 255));
       canvas.drawText(lvl, x, y, paints.text);
-
     }
 
     optionsBtn.draw(canvas);
