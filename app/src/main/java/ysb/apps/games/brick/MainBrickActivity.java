@@ -49,6 +49,11 @@ public class MainBrickActivity extends AppCompatActivity
   @Override
   public void onDestroy()
   {
+    FragmentManager fm = getSupportFragmentManager();
+    GameFragment persistentData = (GameFragment) fm.findFragmentByTag("data");
+    if (persistentData != null)
+      persistentData.getGame().release();
+
     System.out.println("Activity destroyed");
     super.onDestroy();
   }

@@ -123,7 +123,7 @@ public class Game extends Thread
         if (state == STATE_DROPPING)
         {
           state = STATE_GAME;
-          view.play(R.raw.drop);
+          view.sndManager.play(R.raw.drop);
         }
         repaint();
         sleepMs(100);
@@ -198,7 +198,7 @@ public class Game extends Thread
 
   private void merge(int mergedRows)
   {
-    view.play(R.raw.remove_line);
+    view.sndManager.play(R.raw.remove_line);
     prize = Math.round(level * speed() * mergedRows * mergedRows);
     for (prizeCycle = 0; prizeCycle < 200; prizeCycle++)
     {
@@ -242,7 +242,7 @@ public class Game extends Thread
         if (!cup.isFigurePositionValid(currentFigure))
           currentFigure.rotateBack();
         else
-          view.play(R.raw.rotate);
+          view.sndManager.play(R.raw.rotate);
         break;
       case DROP:
         state = STATE_DROPPING;
@@ -279,7 +279,7 @@ public class Game extends Thread
 
   private void nextLevel()
   {
-    view.play(R.raw.level);
+    view.sndManager.play(R.raw.level);
     currentFigure = null;
     figureCount = 0;
     repaint();
@@ -347,5 +347,11 @@ public class Game extends Thread
   int speed()
   {
     return (int) (1 + time() / 60000);    // speed is increasing once a minute
+  }
+
+  public void release()
+  {
+    System.out.println("game release()");
+    view.sndManager.release();
   }
 }

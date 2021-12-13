@@ -8,7 +8,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.Rect;
-import android.media.MediaPlayer;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -56,8 +55,7 @@ public class DrawView extends View
   private final Bitmap drop;
   private final HashSet<Integer> helpActions = new HashSet<>();
   private final HashMap<Integer, Animation> animations = new HashMap<>();
-
-  private boolean soundsOn = true;
+  final SndManager sndManager;
 
 
   public DrawView(Context context)
@@ -78,6 +76,14 @@ public class DrawView extends View
     right = BitmapFactory.decodeResource(getResources(), R.drawable.demo_right, options);
     rotate = BitmapFactory.decodeResource(getResources(), R.drawable.demo_rotate, options);
     drop = BitmapFactory.decodeResource(getResources(), R.drawable.demo_drop, options);
+
+    sndManager = new SndManager(context);
+    sndManager.addSound(R.raw.click);
+    sndManager.addSound(R.raw.drop);
+    sndManager.addSound(R.raw.level);
+    sndManager.addSound(R.raw.move);
+    sndManager.addSound(R.raw.remove_line);
+    sndManager.addSound(R.raw.rotate);
   }
 
   private void initialize(Canvas canvas)
@@ -145,7 +151,7 @@ public class DrawView extends View
       else if (optionsBtn.rect.contains(x, y))
         game.newGame((byte) 1);
 
-      play(R.raw.click);
+      sndManager.play(R.raw.click);
       performClick();
     }
     else    // game is started
@@ -155,7 +161,7 @@ public class DrawView extends View
           (touch.dir == Touch.DIR_LEFT || touch.dir == Touch.DIR_RIGHT) && bounds.contains(x, y))    // touch down and touch move belong to the control rect
       {
         game.action(touch.dir == Touch.DIR_LEFT ? Game.MOVE_LEFT : Game.MOVE_RIGHT);
-        play(R.raw.move);
+        sndManager.play(R.raw.move);
         touch.movedLeftRight();
       }
       else if (touch.action == Touch.ACTION_UP && !touch.movedLeftRight)
@@ -172,17 +178,17 @@ public class DrawView extends View
             else if (game.state == Game.STATE_PAUSED)
               game.resumeFromPause();
 
-            play(R.raw.click);
+            sndManager.play(R.raw.click);
           }
           else if (game.state == Game.STATE_GAME && sndOnBtn.rect.contains(x, y))
           {
-            soundsOn = !soundsOn;
-            play(R.raw.click);
+            sndManager.soundsOn = !sndManager.soundsOn;
+            sndManager.play(R.raw.click);
           }
           else if (game.state == Game.STATE_PAUSED && quitGameBtn.rect.contains(x, y))
           {
             game.quitToStartPage();
-            play(R.raw.click);
+            sndManager.play(R.raw.click);
           }
           else if (BuildConfig.DEBUG && x > cupRect.right && y < cupRect.top)
           {
@@ -192,12 +198,12 @@ public class DrawView extends View
           else if (touch.y > cupRect.top && touch.x < bounds.width() / 2f)
           {
             game.action(Game.MOVE_LEFT);
-            play(R.raw.move);
+            sndManager.play(R.raw.move);
           }
           else if (touch.y > cupRect.top && touch.x > bounds.width() / 2f)
           {
             game.action(Game.MOVE_RIGHT);
-            play(R.raw.move);
+            sndManager.play(R.raw.move);
           }
 
           performClick();
@@ -491,19 +497,10 @@ public class DrawView extends View
     if (game.state == Game.STATE_GAME)
     {
       pauseBtn.draw(canvas);
-      if (soundsOn)
-        sndOffBtn.draw(canvas);
-      else
+      if (sndManager.soundsOn)
         sndOnBtn.draw(canvas);
-    }
-  }
-
-  void play(int id)
-  {
-    if (soundsOn)
-    {
-      MediaPlayer mediaPlayer = MediaPlayer.create(getContext(), id);
-      mediaPlayer.start();
+      else
+        sndOffBtn.draw(canvas);
     }
   }
 
