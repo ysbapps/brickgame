@@ -149,7 +149,7 @@ public class DrawView extends View
       else if (contBtn.rect.contains(x, y))
         game.newGame(game.scores.getMaxAchievedLevel());
       else if (optionsBtn.rect.contains(x, y))
-        game.newGame((byte) 1);
+        game.showOptions();
 
       sndManager.play(R.raw.click);
       performClick();

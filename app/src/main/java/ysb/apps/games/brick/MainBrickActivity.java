@@ -23,7 +23,7 @@ public class MainBrickActivity extends AppCompatActivity
     System.out.println("persistentData: " + persistentData);
     if (persistentData == null)
     {
-      System.out.println("--------------------------------------------------------------------------");
+      System.out.println("new game created");
       persistentData = new GameFragment();
       fm.beginTransaction().add(persistentData, "data").commit();
       Game game = new Game(this);

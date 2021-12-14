@@ -2,6 +2,7 @@ package ysb.apps.games.brick.game;
 
 import java.util.HashSet;
 
+import ysb.apps.games.brick.InAppsProductsManager;
 import ysb.apps.games.brick.MainBrickActivity;
 import ysb.apps.games.brick.R;
 
@@ -36,9 +37,8 @@ public class Game extends Thread
   private int figureCount = 0;
   private long figureStartTime;
   private final HashSet<Integer> figureActions = new HashSet<>();
-
   Scores scores;
-
+  private final InAppsProductsManager prodManager;
   boolean isAlive = true;
 
 
@@ -48,6 +48,8 @@ public class Game extends Thread
 
     cup = new Cup(activity.getAssets());
     scores = new Scores(activity.getApplicationContext());
+    prodManager = new InAppsProductsManager(activity, this);
+
     start();
   }
 
@@ -84,11 +86,24 @@ public class Game extends Thread
     state = STATE_GAME;
   }
 
+  private void updateProducts()
+  {
+    prodManager.connect();
+  }
+
+  void showOptions()
+  {
+    prodManager.purchase(InAppsProductsManager.PROD_20_LEVELS);
+
+  }
+
   public void run()
   {
     System.out.println("Game is started.");
     try
     {
+      updateProducts();
+
       while (isAlive)
       {
         repaint();
@@ -361,5 +376,6 @@ public class Game extends Thread
   {
     System.out.println("game release()");
     view.sndManager.release();
+    prodManager.disconnect();
   }
 }
