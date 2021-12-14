@@ -112,6 +112,9 @@ class Scores
 
   void saveMaxLevel(byte level)
   {
+    if (level <= maxAchievedLevel)
+      return;
+
     maxAchievedLevel = level;
     try
     {
