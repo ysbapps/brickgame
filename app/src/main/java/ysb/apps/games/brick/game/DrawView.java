@@ -16,6 +16,8 @@ import java.util.HashSet;
 
 import ysb.apps.games.brick.BuildConfig;
 import ysb.apps.games.brick.R;
+import ysb.apps.utils.logs.L;
+import ysb.apps.utils.logs.LR;
 
 public class DrawView extends View
 {
@@ -61,14 +63,14 @@ public class DrawView extends View
   public DrawView(Context context)
   {
     super(context);
-    System.out.println("View created");
+    L.i("View created");
 
     BitmapFactory.Options options = new BitmapFactory.Options();
     options.inSampleSize = 2;
     options.inJustDecodeBounds = false;
     bgs[0] = BitmapFactory.decodeResource(getResources(), R.drawable.start_bg, options);
     bgs[1] = BitmapFactory.decodeResource(getResources(), R.drawable.bg, options);
-    System.out.println("bg: " + bgs[1].getWidth() + 'x' + bgs[1].getHeight());
+    L.i("bg: " + bgs[1].getWidth() + 'x' + bgs[1].getHeight());
     bgs[2] = BitmapFactory.decodeResource(getResources(), R.drawable.pause_bg, options);
 
     options.inSampleSize = 4;
@@ -89,17 +91,17 @@ public class DrawView extends View
   private void initialize(Canvas canvas)
   {
     bounds = canvas.getClipBounds();
-    System.out.println("bounds: " + bounds);
+    L.i("bounds: " + bounds);
     float dw = bounds.width() / 1000f;
     float dh = bounds.height() / 2000f;
     offsets = new Rect(Math.round(150 * dw), Math.round(200 * dh), Math.round(150 * dw), Math.round(50 * dh));
-    System.out.println("offsets: " + offsets);
+    L.i("offsets: " + offsets);
 
     float maxSquareW = (bounds.width() - offsets.left - offsets.right) / (float) Cup.W;
     float maxSquareH = (bounds.height() - offsets.top - offsets.bottom) / (float) Cup.H;
     cupSquare = Math.min(maxSquareW, maxSquareH);
     dk = cupSquare / 64;  // display coeff for smaller screens
-    System.out.println("cupSquare, dk: " + cupSquare + ", " + dk);
+    L.i("cupSquare, dk: " + cupSquare + ", " + dk);
 
     cupRect = new Rect(Math.round(bounds.centerX() - Cup.W * cupSquare / 2), offsets.top,
         Math.round(bounds.centerX() + Cup.W * cupSquare / 2), offsets.top + Math.round(Cup.H * cupSquare));
@@ -139,7 +141,7 @@ public class DrawView extends View
   {
     event = evt.toString();
     touch.onEvent(evt);
-//    System.out.println(touch);
+//    L.i(touch);
     int x = touch.x;
     int y = touch.y;
     if (game.state == Game.STATE_NOT_STARTED && touch.action == Touch.ACTION_UP)
@@ -150,9 +152,15 @@ public class DrawView extends View
         game.newGame(game.scores.getMaxAchievedLevel());
       else if (optionsBtn.rect.contains(x, y))
         game.showOptions();
+      else if (x > bounds.right - 50 && y < 50)
+        game.state = Game.STATE_LOGS;
 
       sndManager.play(R.raw.click);
       performClick();
+    }
+    else if (game.state == Game.STATE_LOGS && touch.action == Touch.ACTION_UP)
+    {
+      game.state = Game.STATE_NOT_STARTED;
     }
     else    // game is started
     {
@@ -221,7 +229,7 @@ public class DrawView extends View
 
   protected void onDraw(Canvas canvas)
   {
-//    System.out.println("onDraw");
+//    L.i("onDraw");
     if (bounds == null)
       initialize(canvas);
 
@@ -229,12 +237,17 @@ public class DrawView extends View
     int bx = bounds.width() > bgs[0].getWidth() ? (bounds.width() - bgs[0].getWidth()) / 2 : 0;
     int by = cupRect.height() > bgs[0].getHeight() ? (cupRect.height() - bgs[0].getHeight()) / 2 : 0;
     int ii = game.state < 3 ? game.state : 1;
-    canvas.drawBitmap(bgs[ii], bx, by, paints.cupContents);
+    if (game.state != Game.STATE_LOGS)
+      canvas.drawBitmap(bgs[ii], bx, by, paints.cupContents);
 
     if (game.state == Game.STATE_NOT_STARTED)
       drawStartPage(canvas);
 //    else if (game.state == Game.STATE_CHOOSE_LEVEL)
 //      drawChooseLevelScreen(canvas);
+    else if (game.state == Game.STATE_LOGS)
+    {
+      drawLogs(canvas);
+    }
     else    // game in progress
     {
       drawGameControls(canvas);
@@ -245,7 +258,7 @@ public class DrawView extends View
       {
         game.needHelp(helpActions);
         syncAnimations();
-//        System.out.println(animations);
+//        L.i(animations);
         for (Animation animation : animations.values())
           animation.draw(canvas);
       }
@@ -331,6 +344,25 @@ public class DrawView extends View
     }
 
     optionsBtn.draw(canvas);
+  }
+
+  private void drawLogs(Canvas canvas)
+  {
+    if (L.logs().size() == 0)
+      return;
+
+    float textSize = 26 * dk;
+    paints.text.setTextSize(textSize);
+    paints.text.setColor(paints.controlColor);
+    paints.text.setTextAlign(Paint.Align.LEFT);
+    for (int i = L.logs().size() - 1; i >= 0; i--)
+    {
+      LR lr = L.logs().get(i);
+      paints.text.setColor(lr.warn ? Color.rgb(255, 96, 96) : paints.controlColor);
+      float y = bounds.bottom - textSize * (L.logs().size() - i);
+      canvas.drawText(lr.time, bounds.left + 10, y, paints.text);
+      canvas.drawText(lr.text, bounds.left + textSize * 7, y, paints.text);
+    }
   }
 
 //  private void drawChooseLevelScreen(Canvas canvas)

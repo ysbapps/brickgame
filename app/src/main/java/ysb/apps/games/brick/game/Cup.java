@@ -4,6 +4,8 @@ import android.content.res.AssetManager;
 
 import java.io.InputStream;
 
+import ysb.apps.utils.logs.L;
+
 class Cup
 {
   final static int W = 10, H = 20;    // cup width and height
@@ -119,7 +121,7 @@ class Cup
     {
       contents = new int[H][W];
       String fileName = level + ".dat";
-      System.out.println("loading level: " + fileName);
+      L.i("loading level: " + fileName);
       InputStream is = am.open(fileName);
       byte[] ba = new byte[W * H];
       //noinspection ResultOfMethodCallIgnored

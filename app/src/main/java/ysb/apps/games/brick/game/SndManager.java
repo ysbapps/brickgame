@@ -5,6 +5,8 @@ import android.media.MediaPlayer;
 
 import java.util.HashMap;
 
+import ysb.apps.utils.logs.L;
+
 public class SndManager
 {
   private final HashMap<Integer, MediaPlayer> players = new HashMap<>();
@@ -21,7 +23,7 @@ public class SndManager
   {
     MediaPlayer mp = MediaPlayer.create(context, id);
     players.put(id, mp);
-    System.out.println("sound added: " + id);
+    L.i("sound added: " + id);
 
     return mp;
   }
@@ -40,7 +42,7 @@ public class SndManager
 
   void release()
   {
-    System.out.println("releasing sound resources.. size: " + players.size());
+    L.i("releasing sound resources.. size: " + players.size());
     for (MediaPlayer mp : players.values())
     {
       mp.stop();

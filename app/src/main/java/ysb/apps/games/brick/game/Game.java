@@ -5,6 +5,7 @@ import java.util.HashSet;
 import ysb.apps.games.brick.InAppsProductsManager;
 import ysb.apps.games.brick.MainBrickActivity;
 import ysb.apps.games.brick.R;
+import ysb.apps.utils.logs.L;
 
 public class Game extends Thread
 {
@@ -13,6 +14,7 @@ public class Game extends Thread
   final static int STATE_PAUSED = 2;
   final static int STATE_DROPPING = 3;
   final static int STATE_GAME_OVER = 4;
+  final static int STATE_LOGS = 9;
 //  final static int STATE_CHOOSE_LEVEL = 5;
 
   final static int MOVE_LEFT = 1;
@@ -99,7 +101,7 @@ public class Game extends Thread
 
   public void run()
   {
-    System.out.println("Game is started.");
+    L.i("Game is started.");
     try
     {
       updateProducts();
@@ -176,7 +178,7 @@ public class Game extends Thread
     {
       e.printStackTrace();
     }
-    System.out.println("Game is stopped.");
+    L.i("Game is stopped.");
   }
 
   public void pause()
@@ -374,7 +376,7 @@ public class Game extends Thread
 
   public void release()
   {
-    System.out.println("game release()");
+    L.i("game release()");
     view.sndManager.release();
     prodManager.disconnect();
   }

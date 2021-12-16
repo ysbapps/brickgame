@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentManager;
 
 import ysb.apps.games.brick.game.DrawView;
 import ysb.apps.games.brick.game.Game;
+import ysb.apps.utils.logs.L;
 
 public class MainBrickActivity extends AppCompatActivity
 {
@@ -14,16 +15,16 @@ public class MainBrickActivity extends AppCompatActivity
   @Override
   public void onCreate(Bundle savedInstanceState)
   {
-    System.out.println("Activity created");
+    L.i("Activity created");
     super.onCreate(savedInstanceState);
 
     // find the retained fragment on activity restarts
     FragmentManager fm = getSupportFragmentManager();
     GameFragment persistentData = (GameFragment) fm.findFragmentByTag("data");
-    System.out.println("persistentData: " + persistentData);
+    L.i("persistentData: " + persistentData);
     if (persistentData == null)
     {
-      System.out.println("new game created");
+      L.i("new game created");
       persistentData = new GameFragment();
       fm.beginTransaction().add(persistentData, "data").commit();
       Game game = new Game(this);
@@ -38,7 +39,7 @@ public class MainBrickActivity extends AppCompatActivity
   @Override
   public void onPause()
   {
-    System.out.println("Activity paused");
+    L.i("Activity paused");
     GameFragment persistentData = (GameFragment) getSupportFragmentManager().findFragmentByTag("data");
     if (persistentData != null && persistentData.getGame() != null)
       persistentData.getGame().pause();
@@ -54,7 +55,7 @@ public class MainBrickActivity extends AppCompatActivity
     if (persistentData != null)
       persistentData.getGame().release();
 
-    System.out.println("Activity destroyed");
+    L.i("Activity destroyed");
     super.onDestroy();
   }
 
