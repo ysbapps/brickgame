@@ -47,9 +47,9 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
         .build();
   }
 
-  public void connect()
+  public void init()
   {
-    L.i("billingClient connect..");
+    L.i("billingClient init..");
     billingClient.startConnection(new BillingClientStateListener()
     {
       @Override
@@ -80,6 +80,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
 
   public void disconnect()
   {
+    L.i("billingClient endConnection.");
     billingClient.endConnection();
   }
 
@@ -223,7 +224,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
       }
     }
     {      // Handle any other error codes.
-      L.w("onQueryPurchasesResponse, failed with other reason, code:" + responseCode, "  msg:");
+      L.w("onQueryPurchasesResponse, failed, code:" + responseCode, "  msg:");
       L.w(debugMessage);
     }
 

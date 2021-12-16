@@ -40,8 +40,9 @@ public class Game extends Thread
   private long figureStartTime;
   private final HashSet<Integer> figureActions = new HashSet<>();
   Scores scores;
-  private final InAppsProductsManager prodManager;
+  private InAppsProductsManager prodManager;
   boolean isAlive = true;
+  public static Game game = null;
 
 
   public Game(MainBrickActivity activity)
@@ -50,7 +51,6 @@ public class Game extends Thread
 
     cup = new Cup(activity.getAssets());
     scores = new Scores(activity.getApplicationContext());
-    prodManager = new InAppsProductsManager(activity, this);
 
     start();
   }
@@ -88,9 +88,10 @@ public class Game extends Thread
     state = STATE_GAME;
   }
 
-  private void updateProducts()
+  public void updateProducts(MainBrickActivity activity)
   {
-    prodManager.connect();
+    prodManager = new InAppsProductsManager(activity, this);
+    prodManager.init();
   }
 
   void showOptions()
@@ -104,8 +105,6 @@ public class Game extends Thread
     L.i("Game is started.");
     try
     {
-      updateProducts();
-
       while (isAlive)
       {
         repaint();
