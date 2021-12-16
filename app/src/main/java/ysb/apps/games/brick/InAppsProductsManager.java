@@ -152,6 +152,8 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
   {
     int responseCode = billingResult.getResponseCode();
     String debugMessage = billingResult.getDebugMessage();
+    L.i("onPurchasesUpdated, code:" + billingResult.getResponseCode(), "  msg: ");
+    L.i(billingResult.getDebugMessage());
     if (responseCode == BillingClient.BillingResponseCode.OK && purchases != null)
     {
       for (Purchase purchase : purchases)
@@ -211,6 +213,8 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
   {
     int responseCode = billingResult.getResponseCode();
     String debugMessage = billingResult.getDebugMessage();
+    L.i("onPurchasesUpdated, code:" + billingResult.getResponseCode(), "  msg: ");
+    L.i(billingResult.getDebugMessage());
     if (responseCode == BillingClient.BillingResponseCode.OK)
     {
       for (Purchase purchase : list)
@@ -223,6 +227,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
           handlePurchase(purchase);
       }
     }
+    else
     {      // Handle any other error codes.
       L.w("onQueryPurchasesResponse, failed, code:" + responseCode, "  msg:");
       L.w(debugMessage);
