@@ -4,11 +4,14 @@ import android.app.Activity;
 
 import androidx.annotation.NonNull;
 
+import com.android.billingclient.api.AcknowledgePurchaseParams;
+import com.android.billingclient.api.AcknowledgePurchaseResponseListener;
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.Purchase;
+import com.android.billingclient.api.PurchasesResponseListener;
 import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
@@ -22,7 +25,7 @@ import ysb.apps.games.brick.game.Game;
 import ysb.apps.utils.logs.L;
 
 
-public class InAppsProductsManager implements PurchasesUpdatedListener
+public class InAppsProductsManager implements PurchasesUpdatedListener, AcknowledgePurchaseResponseListener, PurchasesResponseListener
 {
   public final static String PROD_AUTOSAVE = "ysb.apps.games.brick.autosave";
   public final static String PROD_20_LEVELS = "ysb.apps.games.brick.20_levels";
@@ -56,11 +59,11 @@ public class InAppsProductsManager implements PurchasesUpdatedListener
         {
           L.i("billingClient connected OK.");
           queryProducts();
-
+          queryPurchases();
         }
         else
         {
-          L.w("billingClient failured with code: " + billingResult.getResponseCode() + "  msg:");
+          L.w("billingClient failure with code: " + billingResult.getResponseCode(), "  msg:");
           L.w(billingResult.getDebugMessage());
         }
       }
@@ -114,6 +117,13 @@ public class InAppsProductsManager implements PurchasesUpdatedListener
         });
   }
 
+  private void queryPurchases()
+  {
+    L.i("queryPurchases..");
+    billingClient.queryPurchasesAsync("inapp", this);
+//    billingClient.queryPurchaseHistoryAsync("inapp", this);
+  }
+
   public void purchase(String productId)
   {
     L.i("purchase, productId: " + productId);
@@ -145,18 +155,77 @@ public class InAppsProductsManager implements PurchasesUpdatedListener
     {
       for (Purchase purchase : purchases)
       {
+        L.i("purchase update, token, orderId: " + purchase.getPurchaseToken(), purchase.getOrderId());
+        purchase.getSkus();
+        L.i("product: " + (purchase.getSkus().size() > 0 ? purchase.getSkus().get(0) : "???"));
         L.i(purchase);
-        String purchaseToken = purchase.getPurchaseToken();
-        String orderId = purchase.getOrderId();
+        handlePurchase(purchase);
       }
     }
     else if (responseCode == BillingClient.BillingResponseCode.USER_CANCELED)
     {      // Handle an error caused by a user cancelling the purchase flow.
-      L.w("onPurchasesUpdated, USER_CANCELLED code:" + responseCode + "  , debugMsg: " + debugMessage);
+      L.w("onPurchasesUpdated, USER_CANCELLED code: " + responseCode, "  msg:");
+      L.w(debugMessage);
     }
     else
     {      // Handle any other error codes.
-      L.w("onPurchasesUpdated, failed with other reason, code:" + responseCode + "  , debugMsg: " + debugMessage);
+      L.w("onPurchasesUpdated, failed with other reason, code:" + responseCode, "  msg:");
+      L.w(debugMessage);
     }
+  }
+
+  void handlePurchase(Purchase purchase)
+  {
+    L.i("handlePurchase, state: " + purchase.getPurchaseState());
+    if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED)
+    {
+      L.i("handlePurchase, PURCHASED, check acknowledge: " + purchase.isAcknowledged(), "  token:");
+      L.i(purchase.getPurchaseToken());
+      if (!purchase.isAcknowledged())
+      {
+        AcknowledgePurchaseParams acknowledgePurchaseParams =
+            AcknowledgePurchaseParams.newBuilder()
+                .setPurchaseToken(purchase.getPurchaseToken())
+                .build();
+        L.i("handlePurchase, PURCHASED, acknowledgePurchase, token:");
+        billingClient.acknowledgePurchase(acknowledgePurchaseParams, this);
+      }
+      else
+        L.i("handlePurchase, PURCHASED, already acknowledged");
+    }
+    else
+      L.w("handlePurchase, NOT PURCHASED");
+  }
+
+  @Override
+  public void onAcknowledgePurchaseResponse(@NonNull BillingResult billingResult)
+  {
+    L.i("onAcknowledgePurchaseResponse, code: " + billingResult.getResponseCode());
+    if (billingResult.getResponseCode() != BillingClient.BillingResponseCode.OK)
+      L.w(billingResult.getDebugMessage());
+  }
+
+  @Override
+  public void onQueryPurchasesResponse(@NonNull BillingResult billingResult, @NonNull List<Purchase> list)
+  {
+    int responseCode = billingResult.getResponseCode();
+    String debugMessage = billingResult.getDebugMessage();
+    if (responseCode == BillingClient.BillingResponseCode.OK)
+    {
+      for (Purchase purchase : list)
+      {
+        L.i("purchase response, token, orderId: " + purchase.getPurchaseToken(), purchase.getOrderId());
+        purchase.getSkus();
+        L.i("product: " + (purchase.getSkus().size() > 0 ? purchase.getSkus().get(0) : "???"));
+        L.i(purchase);
+        if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED && !purchase.isAcknowledged())
+          handlePurchase(purchase);
+      }
+    }
+    {      // Handle any other error codes.
+      L.w("onQueryPurchasesResponse, failed with other reason, code:" + responseCode, "  msg:");
+      L.w(debugMessage);
+    }
+
   }
 }
