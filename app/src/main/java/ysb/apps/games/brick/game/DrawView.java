@@ -358,7 +358,7 @@ public class DrawView extends View
     for (int i = L.logs().size() - 1; i >= 0; i--)
     {
       LR lr = L.logs().get(i);
-      paints.text.setColor(lr.warn ? Color.rgb(255, 96, 96) : paints.controlColor);
+      paints.text.setColor(lr.warn ? Color.YELLOW : paints.controlColor);
       float y = bounds.bottom - textSize * (L.logs().size() - i);
       canvas.drawText(lr.time, bounds.left + 10, y, paints.text);
       canvas.drawText(lr.text, bounds.left + textSize * 7, y, paints.text);
