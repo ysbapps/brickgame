@@ -27,7 +27,7 @@ public class MainBrickActivity extends AppCompatActivity
     DrawView view = new DrawView(this);
     Game.game.setView(view);
     setContentView(view);
-    Game.game.updateProducts(this);
+    Game.game.updateProducts();
   }
 
   @Override

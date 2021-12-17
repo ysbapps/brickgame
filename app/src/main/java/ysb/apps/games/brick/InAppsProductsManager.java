@@ -30,26 +30,38 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
   public final static String PROD_AUTOSAVE = "ysb.apps.games.brick.autosave";
   public final static String PROD_20_LEVELS = "ysb.apps.games.brick.20_levels";
 
+  public final static String[] PS = new String[]{"UNSPECIFIED_STATE", "PURCHASED", "PENDING"};
+
   private final Activity activity;
   private final Game game;
   private final BillingClient billingClient;
-  private HashMap<String, SkuDetails> products = new HashMap<>();
+  private HashMap<String, Product> products = new HashMap<>();
 
+
+  private class Product
+  {
+    final String id;
+    final SkuDetails sku;
+    boolean purchased;
+
+    public Product(String id, SkuDetails sku)
+    {
+      this.id = id;
+      this.sku = sku;
+    }
+  }
 
   public InAppsProductsManager(Activity activity, Game game)
   {
     this.activity = activity;
     this.game = game;
 
+    L.i("billingClient init..");
     billingClient = BillingClient.newBuilder(activity)
         .setListener(this)
         .enablePendingPurchases()
         .build();
-  }
 
-  public void init()
-  {
-    L.i("billingClient init..");
     billingClient.startConnection(new BillingClientStateListener()
     {
       @Override
@@ -57,25 +69,28 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
       {
         if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK)    // The BillingClient is ready. You can query purchases here.
         {
-          L.i("billingClient connected OK.");
+          L.i("onBSF, billingClient connected OK.");
           queryProducts();
           queryPurchases();
         }
         else
         {
-          L.w("billingClient failure with code: " + billingResult.getResponseCode(), "  msg:");
+          L.w("onBSF, billingClient failure with code: " + billingResult.getResponseCode(), "  msg:");
           L.w(billingResult.getDebugMessage());
         }
       }
 
       @Override
       public void onBillingServiceDisconnected()
-      {
-        // Try to restart the connection on the next request to   todo
-        // Google Play by calling the startConnection() method.
+      {        // Try to restart the connection on the next request to Google Play by calling the startConnection() method. - not sure that it is needed
         L.w("onBillingServiceDisconnected");
       }
     });
+  }
+
+  public boolean isConnected()
+  {
+    return billingClient.isReady();
   }
 
   public void disconnect()
@@ -98,23 +113,18 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
           @Override
           public void onSkuDetailsResponse(@NonNull BillingResult billingResult, List<SkuDetails> skuDetailsList)
           {            // Process the result.
-            L.i("billingResult, code:" + billingResult.getResponseCode() + "  , debugMsg: " + billingResult.getDebugMessage());
-            L.i("billingResult, skuDetailsList.size:" + skuDetailsList.size());
+            L.i("onSDR, code:" + billingResult.getResponseCode() + "  , debugMsg: " + billingResult.getDebugMessage());
+            L.i("onSDR, skuDetailsList.size:" + skuDetailsList.size());
             for (SkuDetails sku : skuDetailsList)
             {
-              String sku1 = sku.getSku();
-              String title = sku.getTitle();
-              String description = sku.getDescription();
-              String type = sku.getType();
-              String price = sku.getPrice();
-              String priceCurrencyCode = sku.getPriceCurrencyCode();
-              String originalJson = sku.getOriginalJson();
-              String zzb = sku.zzb();
-              products.put(sku.getSku(), sku);
-              L.i(originalJson);
+              Product p = new Product(sku.getSku(), sku);
+              products.put(p.id, p);
+              L.i("onSDR, id, type:" + sku.getSku(), sku.getType());
+              L.i("onSDR, title:" + sku.getTitle());
+              L.i("onSDR, description:" + sku.getDescription());
+              L.i("onSDR, price:" + sku.getPrice(), sku.getPriceCurrencyCode());
             }
           }
-
         });
   }
 
@@ -122,116 +132,126 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
   {
     L.i("queryPurchases..");
     billingClient.queryPurchasesAsync("inapp", this);
-//    billingClient.queryPurchaseHistoryAsync("inapp", this);
   }
 
-  public void purchase(String productId)
+  private String ps(int state)
   {
-    L.i("purchase, productId: " + productId);
-    SkuDetails sku = products.get(productId);
-    if (sku != null)
-    {
-      L.i("purchasing sku: " + sku.getTitle());
-      BillingFlowParams billingFlowParams = BillingFlowParams.newBuilder()
-          .setSkuDetails(sku)
-          .build();
-      int responseCode = billingClient.launchBillingFlow(activity, billingFlowParams).getResponseCode();
-      if (responseCode == BillingClient.BillingResponseCode.OK)
-      {
-        L.i("purchased OK");
-
-      }
-      else
-        L.i("purchase failed!!!, responseCode: " + responseCode);
-    }
-
-  }
-
-  @Override
-  public void onPurchasesUpdated(BillingResult billingResult, List<Purchase> purchases)
-  {
-    int responseCode = billingResult.getResponseCode();
-    String debugMessage = billingResult.getDebugMessage();
-    L.i("onPurchasesUpdated, code:" + billingResult.getResponseCode(), "  msg: ");
-    L.i(billingResult.getDebugMessage());
-    if (responseCode == BillingClient.BillingResponseCode.OK && purchases != null)
-    {
-      for (Purchase purchase : purchases)
-      {
-        L.i("purchase update, token, orderId: " + purchase.getPurchaseToken(), purchase.getOrderId());
-        purchase.getSkus();
-        L.i("product: " + (purchase.getSkus().size() > 0 ? purchase.getSkus().get(0) : "???"));
-        L.i(purchase);
-        handlePurchase(purchase);
-      }
-    }
-    else if (responseCode == BillingClient.BillingResponseCode.USER_CANCELED)
-    {      // Handle an error caused by a user cancelling the purchase flow.
-      L.w("onPurchasesUpdated, USER_CANCELLED code: " + responseCode, "  msg:");
-      L.w(debugMessage);
-    }
+    if (state >= 0 && state < PS.length)
+      return PS[state];
     else
-    {      // Handle any other error codes.
-      L.w("onPurchasesUpdated, failed with other reason, code:" + responseCode, "  msg:");
-      L.w(debugMessage);
-    }
-  }
-
-  void handlePurchase(Purchase purchase)
-  {
-    L.i("handlePurchase, state: " + purchase.getPurchaseState());
-    if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED)
-    {
-      L.i("handlePurchase, PURCHASED, check acknowledge: " + purchase.isAcknowledged(), "  token:");
-      L.i(purchase.getPurchaseToken());
-      if (!purchase.isAcknowledged())
-      {
-        AcknowledgePurchaseParams acknowledgePurchaseParams =
-            AcknowledgePurchaseParams.newBuilder()
-                .setPurchaseToken(purchase.getPurchaseToken())
-                .build();
-        L.i("handlePurchase, PURCHASED, acknowledgePurchase, token:");
-        billingClient.acknowledgePurchase(acknowledgePurchaseParams, this);
-      }
-      else
-        L.i("handlePurchase, PURCHASED, already acknowledged");
-    }
-    else
-      L.w("handlePurchase, NOT PURCHASED");
-  }
-
-  @Override
-  public void onAcknowledgePurchaseResponse(@NonNull BillingResult billingResult)
-  {
-    L.i("onAcknowledgePurchaseResponse, code: " + billingResult.getResponseCode());
-    if (billingResult.getResponseCode() != BillingClient.BillingResponseCode.OK)
-      L.w(billingResult.getDebugMessage());
+      return "UNKNOWN STATE";
   }
 
   @Override
   public void onQueryPurchasesResponse(@NonNull BillingResult billingResult, @NonNull List<Purchase> list)
   {
-    int responseCode = billingResult.getResponseCode();
-    String debugMessage = billingResult.getDebugMessage();
-    L.i("onPurchasesUpdated, code:" + billingResult.getResponseCode(), "  msg: ");
-    L.i(billingResult.getDebugMessage());
-    if (responseCode == BillingClient.BillingResponseCode.OK)
+    L.i("onQPR, code:" + billingResult.getResponseCode());
+    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK)
     {
       for (Purchase purchase : list)
       {
-        L.i("purchase response, token, orderId: " + purchase.getPurchaseToken(), purchase.getOrderId());
-        purchase.getSkus();
-        L.i("product: " + (purchase.getSkus().size() > 0 ? purchase.getSkus().get(0) : "???"));
-        L.i(purchase);
-        if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED && !purchase.isAcknowledged())
-          handlePurchase(purchase);
+        L.i("onQPR, state: " + purchase.getPurchaseState(), ps(purchase.getPurchaseState()));
+        L.i("onQPR, token: " + purchase.getPurchaseToken());
+        L.i("onQPR, orderId: " + purchase.getOrderId());
+        String productId = purchase.getSkus().size() > 0 ? purchase.getSkus().get(0) : "???";
+        L.i("onQPR, product: " + productId);
+        L.i("onQPR, time: " + purchase.getPurchaseTime());
+        L.i("onQPR, package: " + purchase.getPackageName());
+        L.i("onQPR, account: " + purchase.getAccountIdentifiers());
+        handlePurchase(purchase);
       }
+    }
+    else       // Handle any other error codes.
+    {
+      L.w("onQPR, failed, code:" + billingResult.getResponseCode(), "  msg:");
+      L.w(billingResult.getDebugMessage());
+    }
+  }
+
+  private void setProductPurchased(String productId)
+  {
+    Product p = products.get(productId);
+    if (p != null)
+      p.purchased = true;
+    else
+      L.w("setPP, product NOT found: " + productId);
+  }
+
+  public void purchase(String productId)
+  {
+    L.i("purchase, productId: " + productId);
+    Product p = products.get(productId);
+    if (p != null)
+    {
+      L.i("purchase, sku: " + p.sku.getTitle());
+      BillingFlowParams billingFlowParams = BillingFlowParams.newBuilder()
+          .setSkuDetails(p.sku)
+          .build();
+      int responseCode = billingClient.launchBillingFlow(activity, billingFlowParams).getResponseCode();
+      if (responseCode == BillingClient.BillingResponseCode.OK)
+        L.i("purchase, launchBillingFlow returned OK");
+      else
+        L.i("purchase, launchBillingFlow failed!, code: " + responseCode);
+    }
+    else
+      L.w("purchase, product NOT found: " + productId);
+  }
+
+  @Override
+  public void onPurchasesUpdated(BillingResult billingResult, List<Purchase> purchases)
+  {
+    L.i("onPU, code:" + billingResult.getResponseCode());
+    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && purchases != null)
+    {
+      for (Purchase purchase : purchases)
+      {
+        L.i("onPU, state: " + purchase.getPurchaseState(), ps(purchase.getPurchaseState()));
+        L.i("onPU, token: " + purchase.getPurchaseToken());
+        L.i("onPU, orderId: " + purchase.getOrderId());
+        String productId = purchase.getSkus().size() > 0 ? purchase.getSkus().get(0) : "???";
+        L.i("onPU, product: " + productId);
+        L.i("onPU, time: " + purchase.getPurchaseTime());
+        L.i("onPU, account: " + purchase.getAccountIdentifiers());
+        handlePurchase(purchase);
+      }
+    }
+    else if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.USER_CANCELED)
+    {      // Handle an error caused by a user cancelling the purchase flow.
+      L.w("onPU, USER_CANCELLED code: " + billingResult.getResponseCode(), "  msg:");
+      L.w(billingResult.getDebugMessage());
     }
     else
     {      // Handle any other error codes.
-      L.w("onQueryPurchasesResponse, failed, code:" + responseCode, "  msg:");
-      L.w(debugMessage);
+      L.w("onPU, failed with other reason, code:" + billingResult.getResponseCode(), "  msg:");
+      L.w(billingResult.getDebugMessage());
     }
+  }
 
+  private void handlePurchase(Purchase purchase)
+  {
+    L.i("handlePurchase, state: " + purchase.getPurchaseState(), ps(purchase.getPurchaseState()));
+    if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED)
+    {
+      String productId = purchase.getSkus().size() > 0 ? purchase.getSkus().get(0) : "???";
+      setProductPurchased(productId);
+      L.i("handlePurchase, check acknowledge: " + purchase.isAcknowledged());
+      if (!purchase.isAcknowledged())
+      {
+        L.i("handlePurchase, acknowledge..");
+        AcknowledgePurchaseParams acknowledgePurchaseParams =
+            AcknowledgePurchaseParams.newBuilder()
+                .setPurchaseToken(purchase.getPurchaseToken())
+                .build();
+        billingClient.acknowledgePurchase(acknowledgePurchaseParams, this);
+      }
+    }
+  }
+
+  @Override
+  public void onAcknowledgePurchaseResponse(@NonNull BillingResult billingResult)
+  {
+    L.i("onAPR, code: " + billingResult.getResponseCode());
+    if (billingResult.getResponseCode() != BillingClient.BillingResponseCode.OK)
+      L.w(billingResult.getDebugMessage());
   }
 }

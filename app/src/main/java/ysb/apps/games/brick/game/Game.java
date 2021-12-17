@@ -43,12 +43,14 @@ public class Game extends Thread
   private InAppsProductsManager prodManager;
   boolean isAlive = true;
   public static Game game = null;
+  public final MainBrickActivity activity;
 
 
   public Game(MainBrickActivity activity)
   {
     super();
 
+    this.activity = activity;
     cup = new Cup(activity.getAssets());
     scores = new Scores(activity.getApplicationContext());
 
@@ -88,10 +90,9 @@ public class Game extends Thread
     state = STATE_GAME;
   }
 
-  public void updateProducts(MainBrickActivity activity)
+  public void updateProducts()
   {
     prodManager = new InAppsProductsManager(activity, this);
-    prodManager.init();
   }
 
   void showOptions()
@@ -210,6 +211,9 @@ public class Game extends Thread
 
     state = STATE_NOT_STARTED;
     message = null;
+
+    prodManager.disconnect();
+    updateProducts();
 
     repaint();
   }

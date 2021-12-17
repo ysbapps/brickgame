@@ -13,7 +13,7 @@ android {
         applicationId "ysb.apps.games.brick"
         minSdk 21
         targetSdk 31
-        versionCode 3
+        versionCode 4
         versionName "1.0"
         signingConfig signingConfigs.release
     }
