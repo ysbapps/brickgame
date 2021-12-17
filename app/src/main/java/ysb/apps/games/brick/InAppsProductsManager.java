@@ -18,7 +18,7 @@ import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import ysb.apps.games.brick.game.Game;
@@ -35,10 +35,11 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
   private final Activity activity;
   private final Game game;
   private final BillingClient billingClient;
-  private HashMap<String, Product> products = new HashMap<>();
+  public LinkedHashMap<String, Product> products = new LinkedHashMap<>();
+  public String message = "";
 
 
-  private class Product
+  private static class Product
   {
     final String id;
     final SkuDetails sku;
@@ -70,6 +71,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
         if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK)    // The BillingClient is ready. You can query purchases here.
         {
           L.i("onBSF, billingClient connected OK.");
+          message="";
           queryProducts();
           queryPurchases();
         }
@@ -77,6 +79,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
         {
           L.w("onBSF, billingClient failure with code: " + billingResult.getResponseCode(), "  msg:");
           L.w(billingResult.getDebugMessage());
+          message = billingResult.getDebugMessage();
         }
       }
 

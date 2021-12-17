@@ -36,6 +36,7 @@ public class DrawView extends View
   private Button startBtn;
   private Button contBtn;
   private Button optionsBtn;
+  private Button closeOptionsBtn;
 
   private Paints paints;
   private float dk;
@@ -114,15 +115,16 @@ public class DrawView extends View
     startBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.start), cupRect.left - 80 * dk, bounds.bottom - Math.round(600 * dk));
     contBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.cont), cupRect.left - 80 * dk, startBtn.rect.bottom + 50 * dk);
     optionsBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.opts), cupRect.right - 30 * dk, bounds.bottom - Math.round(300 * dk));
+    closeOptionsBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.quit), optionsBtn.rect.left, optionsBtn.rect.top);
 
     BitmapFactory.Options options = new BitmapFactory.Options();
     options.inSampleSize = dk < 0.8 ? 2 : 1;
     options.inJustDecodeBounds = false;
     pauseBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.pause, options), cupRect.right + 20 * dk, cupRect.top + 470 * dk);
     resumeBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.resume, options), pauseBtn.rect.left, pauseBtn.rect.top);
-    Bitmap img = BitmapFactory.decodeResource(getResources(), R.drawable.quit, options);
-    float lx = cupRect.left - img.getWidth() - 18 * dk;
-    quitGameBtn = new Button(img, lx, pauseBtn.rect.top);
+    Bitmap quitImg = BitmapFactory.decodeResource(getResources(), R.drawable.quit, options);
+    float lx = cupRect.left - quitImg.getWidth() - 18 * dk;
+    quitGameBtn = new Button(quitImg, lx, pauseBtn.rect.top);
     sndOnBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.snd_on, options), lx, pauseBtn.rect.top);
     sndOffBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.snd_off, options), lx, pauseBtn.rect.top);
 
@@ -157,6 +159,10 @@ public class DrawView extends View
 
       sndManager.play(R.raw.click);
       performClick();
+    }
+    else if (game.state == Game.STATE_OPTIONS && closeOptionsBtn.rect.contains(x, y) && touch.action == Touch.ACTION_UP)
+    {
+      game.state = Game.STATE_NOT_STARTED;
     }
     else if (game.state == Game.STATE_LOGS && touch.action == Touch.ACTION_UP)
     {
@@ -236,7 +242,7 @@ public class DrawView extends View
     canvas.drawColor(Color.BLACK);
     int bx = bounds.width() > bgs[0].getWidth() ? (bounds.width() - bgs[0].getWidth()) / 2 : 0;
     int by = cupRect.height() > bgs[0].getHeight() ? (cupRect.height() - bgs[0].getHeight()) / 2 : 0;
-    int ii = game.state < 3 ? game.state : 1;
+    int ii = game.state <= Game.STATE_PAUSED ? game.state : (game.state == Game.STATE_OPTIONS ? 0 : 1);
     if (game.state != Game.STATE_LOGS)
       canvas.drawBitmap(bgs[ii], bx, by, paints.cupContents);
 
@@ -244,10 +250,10 @@ public class DrawView extends View
       drawStartPage(canvas);
 //    else if (game.state == Game.STATE_CHOOSE_LEVEL)
 //      drawChooseLevelScreen(canvas);
+    else if (game.state == Game.STATE_OPTIONS)
+      drawOptionsPage(canvas);
     else if (game.state == Game.STATE_LOGS)
-    {
       drawLogs(canvas);
-    }
     else    // game in progress
     {
       drawGameControls(canvas);
@@ -344,6 +350,21 @@ public class DrawView extends View
     }
 
     optionsBtn.draw(canvas);
+  }
+
+  private void drawOptionsPage(Canvas canvas)
+  {
+    if (game.prodManager.products.size() == 0)
+    {
+      float textSize = 50 * dk;
+      paints.text.setTextSize(textSize);
+      paints.text.setColor(Color.WHITE);
+      paints.text.setTextAlign(Paint.Align.CENTER);
+      canvas.drawText(game.prodManager.message, bounds.centerX(), bounds.centerY(), paints.text);
+      canvas.drawText("Check your internet connection..", bounds.centerX(), bounds.centerY() + 2 * textSize, paints.text);
+    }
+
+    closeOptionsBtn.draw(canvas);
   }
 
   private void drawLogs(Canvas canvas)

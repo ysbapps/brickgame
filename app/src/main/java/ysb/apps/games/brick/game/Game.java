@@ -14,8 +14,9 @@ public class Game extends Thread
   final static int STATE_PAUSED = 2;
   final static int STATE_DROPPING = 3;
   final static int STATE_GAME_OVER = 4;
+  final static int STATE_OPTIONS = 5;
   final static int STATE_LOGS = 9;
-//  final static int STATE_CHOOSE_LEVEL = 5;
+//  final static int STATE_CHOOSE_LEVEL = 6;
 
   final static int MOVE_LEFT = 1;
   final static int MOVE_RIGHT = 2;
@@ -40,7 +41,7 @@ public class Game extends Thread
   private long figureStartTime;
   private final HashSet<Integer> figureActions = new HashSet<>();
   Scores scores;
-  private InAppsProductsManager prodManager;
+  InAppsProductsManager prodManager;
   boolean isAlive = true;
   public static Game game = null;
   public final MainBrickActivity activity;
@@ -97,8 +98,9 @@ public class Game extends Thread
 
   void showOptions()
   {
-    prodManager.purchase(InAppsProductsManager.PROD_20_LEVELS);
-
+    state = STATE_OPTIONS;
+    if (game.prodManager.products.size() == 0)
+      game.updateProducts();
   }
 
   public void run()
@@ -300,7 +302,7 @@ public class Game extends Thread
       currentFigure.rotateBack();
       if (currentFigure.type != Figure.TYPE_SQUARE && canRotate && !figureActions.contains(ROTATE) && figureCount < 7 && seconds < 7 + figureCount / 2)
         actions.add(ROTATE);
-      if (actions.size() == 0 && !figureActions.contains(DROP) && (System.currentTimeMillis() - lastActionTime) / 1000 > 4 + figureCount / 2)
+      if (actions.size() == 0 && !figureActions.contains(DROP) && (System.currentTimeMillis() - lastActionTime) / 1000 > 3 + figureCount / 2)
         actions.add(DROP);
     }
   }
