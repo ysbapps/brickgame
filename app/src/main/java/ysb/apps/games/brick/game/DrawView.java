@@ -115,7 +115,7 @@ public class DrawView extends View
     startBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.start), cupRect.left - 80 * dk, bounds.bottom - Math.round(600 * dk));
     contBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.cont), cupRect.left - 80 * dk, startBtn.rect.bottom + 50 * dk);
     optionsBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.opts), cupRect.right - 30 * dk, bounds.bottom - Math.round(300 * dk));
-    closeOptionsBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.quit), optionsBtn.rect.left, optionsBtn.rect.top);
+    closeOptionsBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.close_opt), optionsBtn.rect.left, optionsBtn.rect.top);
 
     BitmapFactory.Options options = new BitmapFactory.Options();
     options.inSampleSize = dk < 0.8 ? 2 : 1;
@@ -123,7 +123,7 @@ public class DrawView extends View
     pauseBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.pause, options), cupRect.right + 20 * dk, cupRect.top + 470 * dk);
     resumeBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.resume, options), pauseBtn.rect.left, pauseBtn.rect.top);
     Bitmap quitImg = BitmapFactory.decodeResource(getResources(), R.drawable.quit, options);
-    float lx = cupRect.left - quitImg.getWidth() - 18 * dk;
+    float lx = cupRect.left - quitImg.getWidth() - 20 * dk;
     quitGameBtn = new Button(quitImg, lx, pauseBtn.rect.top);
     sndOnBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.snd_on, options), lx, pauseBtn.rect.top);
     sndOffBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.snd_off, options), lx, pauseBtn.rect.top);
@@ -408,7 +408,7 @@ public class DrawView extends View
     paints.text.setTextSize(30 * dk);
     paints.text.setTextAlign(Paint.Align.CENTER);
     paints.text.setColor(paints.controlColor);
-    float lx = cupRect.left - 74 * dk;
+    float lx = cupRect.left - 80 * dk;
     float rx = cupRect.right + 74 * dk;
     canvas.drawText("next", lx, cupRect.top + 30 * dk, paints.text);
     canvas.drawText("level", lx, cupRect.top + 280 * dk, paints.text);
