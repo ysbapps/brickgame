@@ -116,7 +116,7 @@ public class DrawView extends View
     startBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.start), cupRect.left - 80 * dk, bounds.bottom - Math.round(600 * dk));
     contBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.cont), cupRect.left - 80 * dk, startBtn.rect.bottom + 50 * dk);
     optionsBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.opts), cupRect.right - 30 * dk, bounds.bottom - Math.round(300 * dk));
-    closeOptionsBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.close_opt), optionsBtn.rect.left, optionsBtn.rect.top);
+    closeOptionsBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.close_opt), optionsBtn.rect.left, bounds.bottom - 1.5f * optionsBtn.rect.height());
 
     BitmapFactory.Options options = new BitmapFactory.Options();
     options.inSampleSize = dk < 0.8 ? 2 : 1;
@@ -376,6 +376,7 @@ public class DrawView extends View
     String[] keys = {InAppsProductsManager.PROD_20_LEVELS, InAppsProductsManager.PROD_AUTOSAVE};
     for (int i = 0; i < keys.length; i++)
     {
+      InAppsProductsManager.Product p = Objects.requireNonNull(game.prodManager.products.get(keys[i]));
       float y = closeOptionsBtn.rect.top - (i + 1) * (h + 50 * dk);
       paints.options.setColor(Color.BLACK);
       paints.options.setStyle(Paint.Style.FILL);
@@ -384,27 +385,33 @@ public class DrawView extends View
       paints.options.setColor(paints.controlColor);
       paints.options.setStyle(Paint.Style.STROKE);
       paints.options.setStrokeWidth(8);
+      paints.options.setAlpha(p.purchased ? 128 : 255);
       canvas.drawRoundRect(x, y, x + w, y + h, 40 * dk, 40 * dk, paints.options);
       float cx = x + w - 2 * r + 14 * dk;
       float cy = y + h - 2 * r + 14 * dk;
       canvas.drawCircle(cx, cy, r, paints.options);
-      paints.options.setColor(Color.rgb(0, 200, 0));
-      paints.options.setStrokeWidth(16);
-      cx += r / 2.5f;
-      canvas.drawLine(cx - r, cy - r / 2, cx - r / 4, cy + r / 2, paints.options);
-      canvas.drawLine(cx - r / 3.2f, cy + r / 3f, cx + 2 * r / 4, cy - r * 1.2f, paints.options);
+      if (p.purchased)
+      {
+        paints.options.setColor(Color.rgb(0, 164, 0));
+        paints.options.setStrokeWidth(16);
+        cx += r / 2.5f;
+        canvas.drawLine(cx - r, cy - r / 2, cx - r / 4, cy + r / 2, paints.options);
+        canvas.drawLine(cx - r / 3.2f, cy + r / 3f, cx + 2 * r / 4, cy - r * 1.2f, paints.options);
+      }
       paints.text.setTextSize(54 * dk);
       paints.text.setColor(Color.WHITE);
       paints.text.setTextAlign(Paint.Align.LEFT);
-      InAppsProductsManager.Product p = Objects.requireNonNull(game.prodManager.products.get(keys[i]));
+      paints.text.setAlpha(p.purchased ? 164 : 255);
       canvas.drawText(p.sku.getTitle(), x + 22 * dk, y + h / 3.2f, paints.text);
       paints.text.setTextSize(44 * dk);
       paints.text.setTextAlign(Paint.Align.RIGHT);
       paints.text.setColor(Color.YELLOW);
+      paints.text.setAlpha(p.purchased ? 164 : 255);
       canvas.drawText(p.sku.getPrice(), x + w - 22 * dk, y + h / 3.2f, paints.text);
       paints.text.setTextSize(36 * dk);
       paints.text.setColor(Color.rgb(200, 200, 200));
       paints.text.setTextAlign(Paint.Align.LEFT);
+      paints.text.setAlpha(p.purchased ? 164 : 255);
       float ty = y + h / 1.6f;
       int ps = 0;
       int pe = 0;
