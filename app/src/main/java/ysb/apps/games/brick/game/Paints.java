@@ -12,7 +12,7 @@ class Paints
   final int figureColor = Color.rgb(242, 242, 242);
   final Paint cupEdge = new Paint();
   final Paint cupContents = new Paint();
-  final Paint control = new Paint();
+  final Paint options = new Paint();
   final int controlColor = Color.rgb(200, 200, 200);
   final Paint text = new Paint();
   final Paint debugLine = new Paint();

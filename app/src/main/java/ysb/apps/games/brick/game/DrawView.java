@@ -13,8 +13,9 @@ import android.view.View;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Objects;
 
-import ysb.apps.games.brick.BuildConfig;
+import ysb.apps.games.brick.InAppsProductsManager;
 import ysb.apps.games.brick.R;
 import ysb.apps.utils.logs.L;
 import ysb.apps.utils.logs.LR;
@@ -205,7 +206,11 @@ public class DrawView extends View
             game.quitToStartPage();
             sndManager.play(R.raw.click);
           }
-          else if (BuildConfig.DEBUG && x > cupRect.right && y < cupRect.top)
+          else if (game.testMode() && x < cupRect.left && y < cupRect.top)    // clear contents to pass level
+          {
+            game.cup.loadLevel((byte) 0);
+          }
+          else if (game.testMode() && x > cupRect.right && y < cupRect.top) // jump to next level
           {
             game.level++;
             game.cup.loadLevel(game.level);
@@ -324,9 +329,6 @@ public class DrawView extends View
       }
     }
 
-    paints.control.setColor(paints.controlColor);
-    paints.control.setStyle(Paint.Style.STROKE);
-    paints.control.setStrokeWidth(8);
     paints.text.setTextSize(50 * dk);
     paints.text.setTextAlign(Paint.Align.LEFT);
     paints.text.setColor(Color.WHITE);
@@ -354,6 +356,8 @@ public class DrawView extends View
 
   private void drawOptionsPage(Canvas canvas)
   {
+    closeOptionsBtn.draw(canvas);
+
     if (game.prodManager.products.size() == 0)
     {
       float textSize = 50 * dk;
@@ -362,9 +366,68 @@ public class DrawView extends View
       paints.text.setTextAlign(Paint.Align.CENTER);
       canvas.drawText(game.prodManager.message, bounds.centerX(), bounds.centerY(), paints.text);
       canvas.drawText("Check your internet connection..", bounds.centerX(), bounds.centerY() + 2 * textSize, paints.text);
+      return;
     }
 
-    closeOptionsBtn.draw(canvas);
+    float x = 20 * dk;
+    float w = bounds.width() - 2 * x;
+    float h = 200 * dk;
+    float r = 40 * dk;
+    String[] keys = {InAppsProductsManager.PROD_20_LEVELS, InAppsProductsManager.PROD_AUTOSAVE};
+    for (int i = 0; i < keys.length; i++)
+    {
+      float y = closeOptionsBtn.rect.top - (i + 1) * (h + 50 * dk);
+      paints.options.setColor(Color.BLACK);
+      paints.options.setStyle(Paint.Style.FILL);
+      paints.options.setAlpha(128);
+      canvas.drawRoundRect(x, y, x + w, y + h, 40 * dk, 40 * dk, paints.options);
+      paints.options.setColor(paints.controlColor);
+      paints.options.setStyle(Paint.Style.STROKE);
+      paints.options.setStrokeWidth(8);
+      canvas.drawRoundRect(x, y, x + w, y + h, 40 * dk, 40 * dk, paints.options);
+      float cx = x + w - 2 * r + 14 * dk;
+      float cy = y + h - 2 * r + 14 * dk;
+      canvas.drawCircle(cx, cy, r, paints.options);
+      paints.options.setColor(Color.rgb(0, 200, 0));
+      paints.options.setStrokeWidth(16);
+      cx += r / 2.5f;
+      canvas.drawLine(cx - r, cy - r / 2, cx - r / 4, cy + r / 2, paints.options);
+      canvas.drawLine(cx - r / 3.2f, cy + r / 3f, cx + 2 * r / 4, cy - r * 1.2f, paints.options);
+      paints.text.setTextSize(54 * dk);
+      paints.text.setColor(Color.WHITE);
+      paints.text.setTextAlign(Paint.Align.LEFT);
+      InAppsProductsManager.Product p = Objects.requireNonNull(game.prodManager.products.get(keys[i]));
+      canvas.drawText(p.sku.getTitle(), x + 22 * dk, y + h / 3.2f, paints.text);
+      paints.text.setTextSize(44 * dk);
+      paints.text.setTextAlign(Paint.Align.RIGHT);
+      paints.text.setColor(Color.YELLOW);
+      canvas.drawText(p.sku.getPrice(), x + w - 22 * dk, y + h / 3.2f, paints.text);
+      paints.text.setTextSize(36 * dk);
+      paints.text.setColor(Color.rgb(200, 200, 200));
+      paints.text.setTextAlign(Paint.Align.LEFT);
+      float ty = y + h / 1.6f;
+      int ps = 0;
+      int pe = 0;
+      Rect rect = new Rect();
+      while (pe < p.sku.getDescription().length())
+      {
+        while (rect.width() < 2 * w / 3)
+        {
+          pe = p.sku.getDescription().indexOf(' ', pe + 1);
+          if (pe > -1)
+            paints.text.getTextBounds(p.sku.getDescription(), ps, pe, rect);
+          else
+          {
+            pe = p.sku.getDescription().length();
+            break;
+          }
+        }
+        canvas.drawText(p.sku.getDescription().substring(ps, pe), x + 22 * dk, ty, paints.text);
+        ps = pe + 1;
+        ty += h / 4.5f;
+        rect.left = rect.right = 0;
+      }
+    }
   }
 
   private void drawLogs(Canvas canvas)

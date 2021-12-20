@@ -2,6 +2,7 @@ package ysb.apps.games.brick.game;
 
 import java.util.HashSet;
 
+import ysb.apps.games.brick.BuildConfig;
 import ysb.apps.games.brick.InAppsProductsManager;
 import ysb.apps.games.brick.MainBrickActivity;
 import ysb.apps.games.brick.R;
@@ -93,7 +94,7 @@ public class Game extends Thread
 
   public void updateProducts()
   {
-    prodManager = new InAppsProductsManager(activity, this);
+    prodManager = new InAppsProductsManager(activity);
   }
 
   void showOptions()
@@ -384,5 +385,10 @@ public class Game extends Thread
     L.i("game release()");
     view.sndManager.release();
     prodManager.disconnect();
+  }
+
+  public boolean testMode()
+  {
+    return BuildConfig.DEBUG || prodManager.testMode;
   }
 }

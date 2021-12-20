@@ -120,6 +120,9 @@ class Cup
     try
     {
       contents = new int[H][W];
+      if (level == 0)   // pass level in test mode
+        return false;
+
       String fileName = level + ".dat";
       L.i("loading level: " + fileName);
       InputStream is = am.open(fileName);

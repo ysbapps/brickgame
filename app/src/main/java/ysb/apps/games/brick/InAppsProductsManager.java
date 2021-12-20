@@ -17,11 +17,12 @@ import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
 
+import org.json.JSONException;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import ysb.apps.games.brick.game.Game;
 import ysb.apps.utils.logs.L;
 
 
@@ -29,21 +30,22 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
 {
   public final static String PROD_AUTOSAVE = "ysb.apps.games.brick.autosave";
   public final static String PROD_20_LEVELS = "ysb.apps.games.brick.20_levels";
+  public final static String PROD_TEST_MODE = "ysb.apps.games.brick.test.mode";
 
   public final static String[] PS = new String[]{"UNSPECIFIED_STATE", "PURCHASED", "PENDING"};
 
   private final Activity activity;
-  private final Game game;
   private final BillingClient billingClient;
   public LinkedHashMap<String, Product> products = new LinkedHashMap<>();
   public String message = "";
+  public boolean testMode;
 
 
-  private static class Product
+  public static class Product
   {
-    final String id;
-    final SkuDetails sku;
-    boolean purchased;
+    public final String id;
+    public final SkuDetails sku;
+    public boolean purchased;
 
     public Product(String id, SkuDetails sku)
     {
@@ -52,10 +54,9 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
     }
   }
 
-  public InAppsProductsManager(Activity activity, Game game)
+  public InAppsProductsManager(Activity activity)
   {
     this.activity = activity;
-    this.game = game;
 
     L.i("billingClient init..");
     billingClient = BillingClient.newBuilder(activity)
@@ -71,7 +72,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
         if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK)    // The BillingClient is ready. You can query purchases here.
         {
           L.i("onBSF, billingClient connected OK.");
-          message="";
+          message = "";
           queryProducts();
           queryPurchases();
         }
@@ -80,6 +81,8 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
           L.w("onBSF, billingClient failure with code: " + billingResult.getResponseCode(), "  msg:");
           L.w(billingResult.getDebugMessage());
           message = billingResult.getDebugMessage();
+          if (BuildConfig.DEBUG)
+            createTestProducts();
         }
       }
 
@@ -121,7 +124,11 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
             for (SkuDetails sku : skuDetailsList)
             {
               Product p = new Product(sku.getSku(), sku);
-              products.put(p.id, p);
+              if (p.id.equals(PROD_TEST_MODE))
+                testMode = true;
+              else
+                products.put(p.id, p);
+
               L.i("onSDR, id, type:" + sku.getSku(), sku.getType());
               L.i("onSDR, title:" + sku.getTitle());
               L.i("onSDR, description:" + sku.getDescription());
@@ -256,5 +263,49 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
     L.i("onAPR, code: " + billingResult.getResponseCode());
     if (billingResult.getResponseCode() != BillingClient.BillingResponseCode.OK)
       L.w(billingResult.getDebugMessage());
+  }
+
+  private void createTestProducts()
+  {
+    try
+    {
+      L.i("createTestProducts..");
+      String[] jsonSkuDetails = new String[]{"{\n" +
+          "\"productId\":\"ysb.apps.games.brick.autosave\",\n" +
+          "\"type\":\"inapp\",\n" +
+          "\"title\":\"Autosave\",\n" +
+          "\"name\":\"Autosave\",\n" +
+          "\"price\":\"100,00 ₽\",\n" +
+          "\"price_amount_micros\":100000000,\n" +
+          "\"price_currency_code\":\"RUB\",\n" +
+          "\"description\":\"Allows you to start the game from the highest level that you achieved.\",\n" +
+          "\"skuDetailsToken\":\"BEuhp4IBDAONRO9LfBGiubsI1ptNt5nyzHpqVdG1pI2TVy4PW7WHnjHp06sfttoQ8M8K\"\n" +
+          "}\n",
+          "{\n" +
+              "\"productId\":\"ysb.apps.games.brick.20_levels\",\n" +
+              "\"type\":\"inapp\",\n" +
+              "\"title\":\"+20 уровней\",\n" +
+              "\"name\":\"+20 уровней\",\n" +
+              "\"price\":\"200,00 ₽\",\n" +
+              "\"price_amount_micros\":200000000,\n" +
+              "\"price_currency_code\":\"RUB\",\n" +
+              "\"description\":\"Вы получите еще 20 уровней и у Вас станет 30 уровней всего.\",\n" +
+              "\"skuDetailsToken\":\"AEuhp4IBDAONRO9LfBGiubsI1ptNt5nyzHpqVdG1pI2TVy4PW7WHnjHp06sfttoQ8M8K\"\n" +
+              "}\n"};
+      for (String json : jsonSkuDetails)
+      {
+        SkuDetails sku = new SkuDetails(json);
+        Product p = new Product(sku.getSku(), sku);
+        products.put(p.id, p);
+        L.i("id, type:" + sku.getSku(), sku.getType());
+        L.i("title:" + sku.getTitle());
+        L.i("description:" + sku.getDescription());
+        L.i("price:" + sku.getPrice(), sku.getPriceCurrencyCode());
+      }
+    }
+    catch (JSONException e)
+    {
+      e.printStackTrace();
+    }
   }
 }
