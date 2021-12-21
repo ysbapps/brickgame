@@ -283,7 +283,6 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
       {
         SkuDetails sku = new SkuDetails(json);
         Product p = new Product(sku.getSku(), sku);
-        p.purchased = products.size() == 0;
         products.put(p.id, p);
         L.i("id, type:" + sku.getSku(), sku.getType());
         L.i("title:" + sku.getTitle());

@@ -159,15 +159,23 @@ public class DrawView extends View
         game.newGame(game.scores.getMaxAchievedLevel());
       else if (optionsBtn.rect.contains(x, y))
         game.showOptions();
-      else if (x > bounds.right - 90 && y < 90)
+      else if (game.testMode() && x > bounds.right - 90 && y < 90)
         game.state = Game.STATE_LOGS;
 
       sndManager.play(R.raw.click);
       performClick();
     }
-    else if (game.state == Game.STATE_OPTIONS && closeOptionsBtn.rect.contains(x, y) && touch.action == Touch.ACTION_UP)
+    else if (game.state == Game.STATE_OPTIONS && touch.action == Touch.ACTION_UP)   // options
     {
-      game.state = Game.STATE_NOT_STARTED;
+      if (closeOptionsBtn.rect.contains(x, y))
+        game.state = Game.STATE_NOT_STARTED;
+      else
+      {
+        for (ProductPanel panel : prodPanels)
+          if (panel.enabled && panel.rect.contains(x, y))
+            game.purchaseProduct(panel.getProduct());
+      }
+
       sndManager.play(R.raw.click);
     }
     else if (game.state == Game.STATE_LOGS && touch.action == Touch.ACTION_UP)

@@ -5,6 +5,7 @@ import java.util.HashSet;
 import ysb.apps.games.brick.BuildConfig;
 import ysb.apps.games.brick.InAppsProductsManager;
 import ysb.apps.games.brick.MainBrickActivity;
+import ysb.apps.games.brick.Product;
 import ysb.apps.games.brick.R;
 import ysb.apps.utils.logs.L;
 
@@ -102,6 +103,21 @@ public class Game extends Thread
     state = STATE_OPTIONS;
     if (game.prodManager.products.size() == 0)
       game.updateProducts();
+  }
+
+  void purchaseProduct(Product p)
+  {
+    if (p == null)
+    {
+      prodManager.message = "Products not available";
+      return;
+    }
+
+    L.i("purchasing product: " + p);
+    if (testMode())
+      p.purchased = true;
+    else
+      prodManager.purchase(p.id);
   }
 
   public void run()

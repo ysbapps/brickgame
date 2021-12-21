@@ -24,6 +24,11 @@ public class ProductPanel extends Button
     enabled = !product.purchased;
   }
 
+  public Product getProduct()
+  {
+    return product;
+  }
+
   public void draw(Canvas canvas)
   {
     float dk = DrawView.dk;
