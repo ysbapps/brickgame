@@ -118,8 +118,6 @@ public class Game extends Thread
       p.purchased = true;
     else
       prodManager.purchase(p.id);
-
-    prodManager.save();
   }
 
   public void run()

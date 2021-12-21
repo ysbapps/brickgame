@@ -77,8 +77,10 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
           L.w("onBSF, billingClient failure with code: " + billingResult.getResponseCode(), "  msg:");
           L.w(billingResult.getDebugMessage());
           message = billingResult.getDebugMessage();
-          if (!load() && BuildConfig.DEBUG)
+          if (BuildConfig.DEBUG)
             createTestProducts();
+          else
+            load();
         }
       }
 
@@ -275,7 +277,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
     return p != null && p.purchased;
   }
 
-  public void save()
+  private void save()
   {
     try
     {
@@ -300,7 +302,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
     }
   }
 
-  private boolean load()
+  private void load()
   {
     try
     {
@@ -312,7 +314,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
         int length = is.read(ba);
         is.close();
         if (length == 0)
-          return false;
+          return;
 
         for (byte i = 0; i < po.length; i++)
         {
@@ -322,7 +324,6 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
           localProducts.put(p.id, p);
         }
         L.i("localProducts.size: " + localProducts.size());
-        return true;
       }
       else
         L.i("local file not found..");
@@ -332,8 +333,6 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
     {
       e.printStackTrace();
     }
-
-    return false;
   }
 
   private void createTestProducts()
