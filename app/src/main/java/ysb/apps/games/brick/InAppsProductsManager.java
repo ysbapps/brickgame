@@ -1,6 +1,7 @@
 package ysb.apps.games.brick;
 
 import android.app.Activity;
+import android.content.Context;
 
 import androidx.annotation.NonNull;
 
@@ -19,6 +20,10 @@ import com.android.billingclient.api.SkuDetailsResponseListener;
 
 import org.json.JSONException;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,11 +37,15 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
   public final static String PROD_20_LEVELS = "ysb.apps.games.brick.20_levels";
   public final static String PROD_TEST_MODE = "ysb.apps.games.brick.test.mode";
 
+  private static final String FILE_NAME = "purchases.dat";
+  private static final String[] po = {PROD_AUTOSAVE, PROD_20_LEVELS};
+
   public final static String[] PS = new String[]{"UNSPECIFIED_STATE", "PURCHASED", "PENDING"};
 
   private final Activity activity;
   private final BillingClient billingClient;
-  public LinkedHashMap<String, Product> products = new LinkedHashMap<>();
+  public LinkedHashMap<String, Product> products = new LinkedHashMap<>();   // updated from google
+  public LinkedHashMap<String, Product> localProducts = new LinkedHashMap<>();    // get from local storage (cached purchases)
   public String message = "";
   public boolean testMode;
 
@@ -68,7 +77,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
           L.w("onBSF, billingClient failure with code: " + billingResult.getResponseCode(), "  msg:");
           L.w(billingResult.getDebugMessage());
           message = billingResult.getDebugMessage();
-          if (BuildConfig.DEBUG)
+          if (!load() && BuildConfig.DEBUG)
             createTestProducts();
         }
       }
@@ -157,6 +166,8 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
         L.i("onQPR, account: " + purchase.getAccountIdentifiers());
         handlePurchase(purchase);
       }
+
+      save();
     }
     else       // Handle any other error codes.
     {
@@ -211,6 +222,8 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
         L.i("onPU, account: " + purchase.getAccountIdentifiers());
         handlePurchase(purchase);
       }
+
+      save();
     }
     else if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.USER_CANCELED)
     {      // Handle an error caused by a user cancelling the purchase flow.
@@ -255,7 +268,72 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
   public boolean isProductPurchased(String id)
   {
     Product p = products.get(id);
+    if (p != null)
+      return p.purchased;
+
+    p = localProducts.get(id);  // get from local storage
     return p != null && p.purchased;
+  }
+
+  public void save()
+  {
+    try
+    {
+      L.i("save products to local storage..");
+      FileOutputStream outputStream = activity.openFileOutput(FILE_NAME, Context.MODE_PRIVATE);
+      ByteBuffer buffer = ByteBuffer.allocate(po.length);
+      for (String s : po)
+      {
+        Product p = products.get(s);
+        L.i("p: " + p);
+        if (p != null)
+          buffer.put((byte) (p.purchased ? 1 : 0));
+      }
+
+      outputStream.write(buffer.array());
+      outputStream.close();
+      L.i("saved.");
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+    }
+  }
+
+  private boolean load()
+  {
+    try
+    {
+      L.i("get products from local storage..");
+      if (new File(activity.getFilesDir(), FILE_NAME).exists())
+      {
+        InputStream is = activity.openFileInput(FILE_NAME);
+        byte[] ba = new byte[2 * po.length];
+        int length = is.read(ba);
+        is.close();
+        if (length == 0)
+          return false;
+
+        for (byte i = 0; i < po.length; i++)
+        {
+          Product p = new Product(po[i], null);
+          p.purchased = (ba[i] == (byte) 1);
+          L.i("p: " + p);
+          localProducts.put(p.id, p);
+        }
+        L.i("localProducts.size: " + localProducts.size());
+        return true;
+      }
+      else
+        L.i("local file not found..");
+
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+    }
+
+    return false;
   }
 
   private void createTestProducts()

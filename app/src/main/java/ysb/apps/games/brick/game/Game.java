@@ -118,6 +118,8 @@ public class Game extends Thread
       p.purchased = true;
     else
       prodManager.purchase(p.id);
+
+    prodManager.save();
   }
 
   public void run()
@@ -361,7 +363,7 @@ public class Game extends Thread
 
   boolean hasMoreLevels()
   {
-    return level < 30;
+    return level < (prodManager.isProductPurchased(InAppsProductsManager.PROD_20_LEVELS) ? 31 : 10);
   }
 
   private void sleepMs(long ms)

@@ -39,7 +39,7 @@ public class ProductPanel extends Button
     canvas.drawRoundRect(rect, 40 * dk, 40 * dk, p);
     p.setColor(Color.rgb(200, 200, 200));
     p.setStyle(Paint.Style.STROKE);
-    p.setStrokeWidth(8);
+    p.setStrokeWidth(8 * dk);
     p.setAlpha(enabled ? 255 : 128);
     canvas.drawRoundRect(rect, 40 * dk, 40 * dk, p);
     float cx = rect.right - 2 * r + 14 * dk;
@@ -48,7 +48,7 @@ public class ProductPanel extends Button
     if (!enabled)   // purchased
     {
       p.setColor(Color.rgb(0, 164, 0));
-      p.setStrokeWidth(16);
+      p.setStrokeWidth(14 * dk);
       cx += r / 2.5f;
       canvas.drawLine(cx - r, cy - r / 2, cx - r / 4, cy + r / 2, p);
       canvas.drawLine(cx - r / 3.2f, cy + r / 3f, cx + 2 * r / 4, cy - r * 1.2f, p);

@@ -155,7 +155,7 @@ public class DrawView extends View
     {
       if (startBtn.rect.contains(x, y))
         game.newGame((byte) 1);
-      else if (contBtn.rect.contains(x, y))
+      else if (contBtn.enabled && contBtn.rect.contains(x, y))
         game.newGame(game.scores.getMaxAchievedLevel());
       else if (optionsBtn.rect.contains(x, y))
         game.showOptions();
@@ -205,7 +205,7 @@ public class DrawView extends View
               game.pause();
               animations.clear();
             }
-            else if (game.state == Game.STATE_PAUSED)
+            else if (game.state == Game.STATE_PAUSED && game.hasMoreLevels())
               game.resumeFromPause();
 
             sndManager.play(R.raw.click);
