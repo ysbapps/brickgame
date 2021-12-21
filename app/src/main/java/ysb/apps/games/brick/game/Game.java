@@ -178,8 +178,12 @@ public class Game extends Thread
         if (mergedRows > 0)
           merge(mergedRows);
 
+        boolean cont = true;
         if (cup.isLevelComplete())
-          nextLevel();
+          cont = nextLevel();
+
+        if (!cont)
+          continue;
 
         currentFigure = nextFigure;
         figureCount++;
@@ -326,7 +330,7 @@ public class Game extends Thread
     }
   }
 
-  private void nextLevel()
+  private boolean nextLevel()
   {
     view.sndManager.play(R.raw.level);
     currentFigure = null;
@@ -353,11 +357,13 @@ public class Game extends Thread
       message = null;
       levelStarted = System.currentTimeMillis();
       wasOnPause = 0;
+      return true;
     }
     else
     {
       state = STATE_PAUSED;
       message = "All levels completed";
+      return false;
     }
   }
 
