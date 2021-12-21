@@ -347,19 +347,26 @@ public class DrawView extends View
     paints.text.setTextAlign(Paint.Align.LEFT);
     paints.text.setColor(Color.WHITE);
     startBtn.draw(canvas);
-    contBtn.enabled = game.scores.getMaxAchievedLevel() > 1;
+    boolean autosave = game.prodManager.isProductPurchased(InAppsProductsManager.PROD_AUTOSAVE);
+    byte level = game.scores.getMaxAchievedLevel();
+    contBtn.enabled = level > 1 && autosave;
     contBtn.draw(canvas);
-    if (game.scores.getMaxAchievedLevel() > 1)
+    if (level > 1)
     {
-      paints.text.setTextSize(74 * dk);
+      float x = contBtn.rect.right + 80 * dk;
+      float y = contBtn.rect.centerY();
+      paints.options.setColor(Color.GRAY);
+      paints.options.setAlpha(autosave ? 255 : 128);
+      paints.options.setStyle(Paint.Style.FILL);
+      canvas.drawCircle(x, y, 50 * dk, paints.options);
+      y += 20 * dk;
+      paints.text.setTextSize(60 * dk);
       paints.text.setTextAlign(Paint.Align.CENTER);
-      float x = contBtn.rect.centerX() - 10 * dk;
-      float y = contBtn.rect.centerY() + dk * 26;
-      String lvl = "" + game.scores.getMaxAchievedLevel();
       paints.text.setColor(Color.BLACK);
-      canvas.drawText(lvl, x + 4 * dk, y + 4 * dk, paints.text);
-      paints.text.setColor(Color.rgb(100, 100, 255));
-      canvas.drawText(lvl, x, y, paints.text);
+      canvas.drawText("" + level, x + 4 * dk, y + 4 * dk, paints.text);
+      paints.text.setColor(Color.YELLOW);
+      paints.text.setAlpha(autosave ? 255 : 128);
+      canvas.drawText("" + level, x, y, paints.text);
     }
 
     optionsBtn.draw(canvas);

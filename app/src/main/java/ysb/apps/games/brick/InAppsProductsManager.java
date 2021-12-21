@@ -252,6 +252,12 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
       L.w(billingResult.getDebugMessage());
   }
 
+  public boolean isProductPurchased(String id)
+  {
+    Product p = products.get(id);
+    return p != null && p.purchased;
+  }
+
   private void createTestProducts()
   {
     try
