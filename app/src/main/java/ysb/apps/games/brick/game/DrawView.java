@@ -17,6 +17,9 @@ import java.util.Objects;
 
 import ysb.apps.games.brick.InAppsProductsManager;
 import ysb.apps.games.brick.R;
+import ysb.apps.games.brick.game.gui.Animation;
+import ysb.apps.games.brick.game.gui.Button;
+import ysb.apps.games.brick.game.gui.ProductPanel;
 import ysb.apps.utils.logs.L;
 import ysb.apps.utils.logs.LR;
 
@@ -38,9 +41,10 @@ public class DrawView extends View
   private Button contBtn;
   private Button optionsBtn;
   private Button closeOptionsBtn;
+  private ProductPanel[] prodPanels = new ProductPanel[]{new ProductPanel(), new ProductPanel()};
 
   private Paints paints;
-  private float dk;
+  public static float dk;
 
   private final Touch touch = new Touch();
 
@@ -155,7 +159,7 @@ public class DrawView extends View
         game.newGame(game.scores.getMaxAchievedLevel());
       else if (optionsBtn.rect.contains(x, y))
         game.showOptions();
-      else if (x > bounds.right - 50 && y < 50)
+      else if (x > bounds.right - 90 && y < 90)
         game.state = Game.STATE_LOGS;
 
       sndManager.play(R.raw.click);
@@ -164,10 +168,12 @@ public class DrawView extends View
     else if (game.state == Game.STATE_OPTIONS && closeOptionsBtn.rect.contains(x, y) && touch.action == Touch.ACTION_UP)
     {
       game.state = Game.STATE_NOT_STARTED;
+      sndManager.play(R.raw.click);
     }
     else if (game.state == Game.STATE_LOGS && touch.action == Touch.ACTION_UP)
     {
       game.state = Game.STATE_NOT_STARTED;
+      sndManager.play(R.raw.click);
     }
     else    // game is started
     {
@@ -335,10 +341,8 @@ public class DrawView extends View
     startBtn.draw(canvas);
     contBtn.enabled = game.scores.getMaxAchievedLevel() > 1;
     contBtn.draw(canvas);
-//    canvas.drawText("start new game", startBtn.rect.right + dk * 20, startBtn.rect.centerY() + dk * 18, paints.text);
     if (game.scores.getMaxAchievedLevel() > 1)
     {
-//      canvas.drawText("continue game", contBtn.rect.right + dk * 20, contBtn.rect.centerY() + dk * 18, paints.text);
       paints.text.setTextSize(74 * dk);
       paints.text.setTextAlign(Paint.Align.CENTER);
       float x = contBtn.rect.centerX() - 10 * dk;
@@ -346,7 +350,6 @@ public class DrawView extends View
       String lvl = "" + game.scores.getMaxAchievedLevel();
       paints.text.setColor(Color.BLACK);
       canvas.drawText(lvl, x + 4 * dk, y + 4 * dk, paints.text);
-//      paints.text.setColor(Color.rgb(255, 255, 180));
       paints.text.setColor(Color.rgb(100, 100, 255));
       canvas.drawText(lvl, x, y, paints.text);
     }
@@ -372,68 +375,16 @@ public class DrawView extends View
     float x = 20 * dk;
     float w = bounds.width() - 2 * x;
     float h = 200 * dk;
-    float r = 40 * dk;
     String[] keys = {InAppsProductsManager.PROD_20_LEVELS, InAppsProductsManager.PROD_AUTOSAVE};
     for (int i = 0; i < keys.length; i++)
     {
-      InAppsProductsManager.Product p = Objects.requireNonNull(game.prodManager.products.get(keys[i]));
       float y = closeOptionsBtn.rect.top - (i + 1) * (h + 50 * dk);
-      paints.options.setColor(Color.BLACK);
-      paints.options.setStyle(Paint.Style.FILL);
-      paints.options.setAlpha(128);
-      canvas.drawRoundRect(x, y, x + w, y + h, 40 * dk, 40 * dk, paints.options);
-      paints.options.setColor(paints.controlColor);
-      paints.options.setStyle(Paint.Style.STROKE);
-      paints.options.setStrokeWidth(8);
-      paints.options.setAlpha(p.purchased ? 128 : 255);
-      canvas.drawRoundRect(x, y, x + w, y + h, 40 * dk, 40 * dk, paints.options);
-      float cx = x + w - 2 * r + 14 * dk;
-      float cy = y + h - 2 * r + 14 * dk;
-      canvas.drawCircle(cx, cy, r, paints.options);
-      if (p.purchased)
-      {
-        paints.options.setColor(Color.rgb(0, 164, 0));
-        paints.options.setStrokeWidth(16);
-        cx += r / 2.5f;
-        canvas.drawLine(cx - r, cy - r / 2, cx - r / 4, cy + r / 2, paints.options);
-        canvas.drawLine(cx - r / 3.2f, cy + r / 3f, cx + 2 * r / 4, cy - r * 1.2f, paints.options);
-      }
-      paints.text.setTextSize(54 * dk);
-      paints.text.setColor(Color.WHITE);
-      paints.text.setTextAlign(Paint.Align.LEFT);
-      paints.text.setAlpha(p.purchased ? 164 : 255);
-      canvas.drawText(p.sku.getTitle(), x + 22 * dk, y + h / 3.2f, paints.text);
-      paints.text.setTextSize(44 * dk);
-      paints.text.setTextAlign(Paint.Align.RIGHT);
-      paints.text.setColor(Color.YELLOW);
-      paints.text.setAlpha(p.purchased ? 164 : 255);
-      canvas.drawText(p.sku.getPrice(), x + w - 22 * dk, y + h / 3.2f, paints.text);
-      paints.text.setTextSize(36 * dk);
-      paints.text.setColor(Color.rgb(200, 200, 200));
-      paints.text.setTextAlign(Paint.Align.LEFT);
-      paints.text.setAlpha(p.purchased ? 164 : 255);
-      float ty = y + h / 1.6f;
-      int ps = 0;
-      int pe = 0;
-      Rect rect = new Rect();
-      while (pe < p.sku.getDescription().length())
-      {
-        while (rect.width() < 2 * w / 3)
-        {
-          pe = p.sku.getDescription().indexOf(' ', pe + 1);
-          if (pe > -1)
-            paints.text.getTextBounds(p.sku.getDescription(), ps, pe, rect);
-          else
-          {
-            pe = p.sku.getDescription().length();
-            break;
-          }
-        }
-        canvas.drawText(p.sku.getDescription().substring(ps, pe), x + 22 * dk, ty, paints.text);
-        ps = pe + 1;
-        ty += h / 4.5f;
-        rect.left = rect.right = 0;
-      }
+      prodPanels[i].setProduct(Objects.requireNonNull(game.prodManager.products.get(keys[i])));
+      prodPanels[i].rect.left = x;
+      prodPanels[i].rect.top = y;
+      prodPanels[i].rect.right = x + w;
+      prodPanels[i].rect.bottom = y + h;
+      prodPanels[i].draw(canvas);
     }
   }
 

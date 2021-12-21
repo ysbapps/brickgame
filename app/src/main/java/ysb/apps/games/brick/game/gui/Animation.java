@@ -1,4 +1,4 @@
-package ysb.apps.games.brick.game;
+package ysb.apps.games.brick.game.gui;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -13,7 +13,7 @@ public class Animation
   private final long dur;
 
 
-  Animation(Bitmap image, PointF pos, long dur)
+  public Animation(Bitmap image, PointF pos, long dur)
   {
     this.image = image;
     this.pos = pos;
@@ -21,7 +21,7 @@ public class Animation
     started = System.currentTimeMillis();
   }
 
-  void draw(Canvas canvas)
+  public void draw(Canvas canvas)
   {
     int a = Math.round(255f * (System.currentTimeMillis() - started) / dur);
     if (a > 255)

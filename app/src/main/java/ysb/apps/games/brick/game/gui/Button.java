@@ -1,4 +1,4 @@
-package ysb.apps.games.brick.game;
+package ysb.apps.games.brick.game.gui;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -8,25 +8,25 @@ import android.graphics.RectF;
 
 public class Button
 {
-  private final Bitmap image;
-  final RectF rect;
-  private final Paint p = new Paint();
-  boolean enabled = true;
+  protected final Bitmap image;
+  public final RectF rect;
+  protected final Paint p = new Paint();
+  public boolean enabled = true;
 
 
-  Button(Bitmap image, float x, float y)
+  public Button(Bitmap image, float x, float y)
   {
     this.image = image;
     this.rect = new RectF(x, y, x + image.getWidth(), y + image.getHeight());
   }
 
-  Button(float x, float y, float w, float h)
+  public Button(float x, float y, float w, float h)
   {
     this.image = null;
     this.rect = new RectF(x, y, x + w, y + h);
   }
 
-  void draw(Canvas canvas)
+  public void draw(Canvas canvas)
   {
     p.setAlpha(enabled ? 255 : 128);
     if (image != null)

@@ -41,19 +41,6 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
   public boolean testMode;
 
 
-  public static class Product
-  {
-    public final String id;
-    public final SkuDetails sku;
-    public boolean purchased;
-
-    public Product(String id, SkuDetails sku)
-    {
-      this.id = id;
-      this.sku = sku;
-    }
-  }
-
   public InAppsProductsManager(Activity activity)
   {
     this.activity = activity;
