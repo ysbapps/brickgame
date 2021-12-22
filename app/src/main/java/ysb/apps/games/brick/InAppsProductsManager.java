@@ -109,6 +109,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
     List<String> skuList = new ArrayList<>();
     skuList.add(PROD_AUTOSAVE);
     skuList.add(PROD_20_LEVELS);
+    skuList.add(PROD_TEST_MODE);
     SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
     params.setSkusList(skuList).setType(BillingClient.SkuType.INAPP);
     billingClient.querySkuDetailsAsync(params.build(),
@@ -132,6 +133,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
               L.i("onSDR, description:" + sku.getDescription());
               L.i("onSDR, price:" + sku.getPrice(), sku.getPriceCurrencyCode());
             }
+            L.w("onSDR, testMode: " + testMode);
           }
         });
   }

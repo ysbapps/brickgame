@@ -159,7 +159,8 @@ public class DrawView extends View
         game.newGame(game.scores.getMaxAchievedLevel());
       else if (optionsBtn.rect.contains(x, y))
         game.showOptions();
-      else if (game.testMode() && x > bounds.right - 90 && y < 90)
+//      else if (game.testMode() && x > bounds.right - 90 && y < 90)
+      else if (x > bounds.right - 90 && y < 90)
         game.state = Game.STATE_LOGS;
 
       sndManager.play(R.raw.click);
