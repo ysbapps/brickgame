@@ -369,7 +369,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
           "{\n" +
               "\"productId\":\"ysb.apps.games.brick.20_levels\",\n" +
               "\"type\":\"inapp\",\n" +
-              "\"title\":\"+20 уровней\",\n" +
+              "\"title\":\"+20 уровней (ysb.apps.games.brick (unreviewed))\",\n" +
               "\"name\":\"+20 уровней\",\n" +
               "\"price\":\"200,00 ₽\",\n" +
               "\"price_amount_micros\":200000000,\n" +

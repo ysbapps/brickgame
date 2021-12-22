@@ -58,7 +58,9 @@ public class ProductPanel extends Button
     p.setColor(Color.WHITE);
     p.setTextAlign(Paint.Align.LEFT);
     p.setAlpha(enabled ? 255 : 164);
-    canvas.drawText(product.sku.getTitle(), rect.left + 22 * dk, rect.top + rect.height() / 3.2f, p);
+    String name = product.sku.getTitle();
+    int ei = name.indexOf(" (ysb.");
+    canvas.drawText(name.substring(0, ei > 0 ? ei : name.length()), rect.left + 22 * dk, rect.top + rect.height() / 3.2f, p);
     p.setTextSize(44 * dk);
     p.setTextAlign(Paint.Align.RIGHT);
     p.setColor(Color.YELLOW);
