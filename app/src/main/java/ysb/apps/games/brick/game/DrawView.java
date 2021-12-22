@@ -13,9 +13,9 @@ import android.view.View;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Objects;
 
 import ysb.apps.games.brick.InAppsProductsManager;
+import ysb.apps.games.brick.Product;
 import ysb.apps.games.brick.R;
 import ysb.apps.games.brick.game.gui.Animation;
 import ysb.apps.games.brick.game.gui.Button;
@@ -159,8 +159,7 @@ public class DrawView extends View
         game.newGame(game.scores.getMaxAchievedLevel());
       else if (optionsBtn.rect.contains(x, y))
         game.showOptions();
-//      else if (game.testMode() && x > bounds.right - 90 && y < 90)
-      else if (x > bounds.right - 90 && y < 90)
+      else if (game.testMode() && x > bounds.right - 90 && y < 90)
         game.state = Game.STATE_LOGS;
 
       sndManager.play(R.raw.click);
@@ -391,11 +390,11 @@ public class DrawView extends View
     float x = 20 * dk;
     float w = bounds.width() - 2 * x;
     float h = 200 * dk;
-    String[] keys = {InAppsProductsManager.PROD_20_LEVELS, InAppsProductsManager.PROD_AUTOSAVE};
-    for (int i = 0; i < keys.length; i++)
+    for (int i = 0; i < game.prodManager.products.size() - 1; i++)
     {
       float y = closeOptionsBtn.rect.top - (i + 1) * (h + 50 * dk);
-      prodPanels[i].setProduct(Objects.requireNonNull(game.prodManager.products.get(keys[i])));
+      Product p = game.prodManager.products.get(game.prodManager.products.size() - 2 - i);
+      prodPanels[i].setProduct(p);
       prodPanels[i].rect.left = x;
       prodPanels[i].rect.top = y;
       prodPanels[i].rect.right = x + w;

@@ -25,7 +25,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 
 import ysb.apps.utils.logs.L;
@@ -37,22 +37,36 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
   public final static String PROD_20_LEVELS = "ysb.apps.games.brick.20_levels";
   public final static String PROD_TEST_MODE = "ysb.apps.games.brick.test.mode";
 
-  private static final String FILE_NAME = "purchases.dat";
-  private static final String[] po = {PROD_AUTOSAVE, PROD_20_LEVELS};
+  private static final String FILE_NAME = "ps.dat";
 
   public final static String[] PS = new String[]{"UNSPECIFIED_STATE", "PURCHASED", "PENDING"};
 
   private final Activity activity;
-  private final BillingClient billingClient;
-  public LinkedHashMap<String, Product> products = new LinkedHashMap<>();   // updated from google
-  public LinkedHashMap<String, Product> localProducts = new LinkedHashMap<>();    // get from local storage (cached purchases)
+  private BillingClient billingClient = null;
+  public ArrayList<Product> products = new ArrayList<>();
+  public HashMap<String, Product> productsById = new HashMap<>();
   public String message = "";
+  public boolean purchasesUpdated = false;
   public boolean testMode;
 
 
   public InAppsProductsManager(Activity activity)
   {
     this.activity = activity;
+
+    products.add(new Product(PROD_AUTOSAVE));
+    products.add(new Product(PROD_20_LEVELS));
+    products.add(new Product(PROD_TEST_MODE));
+    for (Product p : products)
+      productsById.put(p.id, p);
+
+    loadPurchases();
+  }
+
+  public void update()
+  {
+    if (isConnected())
+      disconnect();
 
     L.i("billingClient init..");
     billingClient = BillingClient.newBuilder(activity)
@@ -79,8 +93,6 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
           message = billingResult.getDebugMessage();
           if (BuildConfig.DEBUG)
             createTestProducts();
-          else
-            load();
         }
       }
 
@@ -94,7 +106,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
 
   public boolean isConnected()
   {
-    return billingClient.isReady();
+    return billingClient != null && billingClient.isReady();
   }
 
   public void disconnect()
@@ -122,17 +134,22 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
             L.i("onSDR, skuDetailsList.size:" + skuDetailsList.size());
             for (SkuDetails sku : skuDetailsList)
             {
-              Product p = new Product(sku.getSku(), sku);
-              if (p.id.equals(PROD_TEST_MODE))
-                testMode = true;
-              else
-                products.put(p.id, p);
-
               L.i("onSDR, id, type:" + sku.getSku(), sku.getType());
               L.i("onSDR, title:" + sku.getTitle());
               L.i("onSDR, description:" + sku.getDescription());
               L.i("onSDR, price:" + sku.getPrice(), sku.getPriceCurrencyCode());
+              Product p = productsById.get(sku.getSku());
+              if (p != null)
+              {
+                p.sku = sku;
+                L.i("onSDR, product found by id, p: " + p);
+                if (p.id.equals(PROD_TEST_MODE))
+                  testMode = true;
+              }
+              else
+                L.w("onSDR, product NOT found by id: " + sku.getSku());
             }
+
             L.w("onSDR, testMode: " + testMode);
           }
         });
@@ -171,6 +188,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
         handlePurchase(purchase);
       }
 
+      purchasesUpdated = true;
       save();
     }
     else       // Handle any other error codes.
@@ -182,17 +200,17 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
 
   private void setProductPurchased(String productId)
   {
-    Product p = products.get(productId);
+    Product p = productsById.get(productId);
     if (p != null)
       p.purchased = true;
     else
-      L.w("setPP, product NOT found: " + productId);
+      L.w("setPP, product NOT found by id: " + productId);
   }
 
   public void purchase(String productId)
   {
     L.i("purchase, productId: " + productId);
-    Product p = products.get(productId);
+    Product p = productsById.get(productId);
     if (p != null)
     {
       L.i("purchase, sku: " + p.sku.getTitle());
@@ -271,11 +289,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
 
   public boolean isProductPurchased(String id)
   {
-    Product p = products.get(id);
-    if (p != null)
-      return p.purchased;
-
-    p = localProducts.get(id);  // get from local storage
+    Product p = productsById.get(id);
     return p != null && p.purchased;
   }
 
@@ -285,13 +299,11 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
     {
       L.i("save products to local storage..");
       FileOutputStream outputStream = activity.openFileOutput(FILE_NAME, Context.MODE_PRIVATE);
-      ByteBuffer buffer = ByteBuffer.allocate(po.length);
-      for (String s : po)
+      ByteBuffer buffer = ByteBuffer.allocate(products.size());
+      for (Product p : products)
       {
-        Product p = products.get(s);
         L.i("p: " + p);
-        if (p != null)
-          buffer.put((byte) (p.purchased ? 1 : 0));
+        buffer.put((byte) (p.purchased ? 1 : 0));
       }
 
       outputStream.write(buffer.array());
@@ -304,28 +316,28 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
     }
   }
 
-  private void load()
+  private void loadPurchases()
   {
     try
     {
-      L.i("get products from local storage..");
+      L.i("get purchases from local storage..");
       if (new File(activity.getFilesDir(), FILE_NAME).exists())
       {
         InputStream is = activity.openFileInput(FILE_NAME);
-        byte[] ba = new byte[2 * po.length];
+        byte[] ba = new byte[2 * products.size()];
         int length = is.read(ba);
         is.close();
+        L.i("data length: " + length);
         if (length == 0)
           return;
 
-        for (byte i = 0; i < po.length; i++)
+        for (int i = 0; i < products.size() && i < length; i++)
         {
-          Product p = new Product(po[i], null);
+          Product p = products.get(i);
           p.purchased = (ba[i] == (byte) 1);
           L.i("p: " + p);
-          localProducts.put(p.id, p);
         }
-        L.i("localProducts.size: " + localProducts.size());
+        L.i("purchases loaded from local storage");
       }
       else
         L.i("local file not found..");
@@ -333,6 +345,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
     }
     catch (Exception e)
     {
+      L.w(e.getMessage());
       e.printStackTrace();
     }
   }
@@ -367,12 +380,10 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
       for (String json : jsonSkuDetails)
       {
         SkuDetails sku = new SkuDetails(json);
-        Product p = new Product(sku.getSku(), sku);
-        products.put(p.id, p);
-        L.i("id, type:" + sku.getSku(), sku.getType());
-        L.i("title:" + sku.getTitle());
-        L.i("description:" + sku.getDescription());
-        L.i("price:" + sku.getPrice(), sku.getPriceCurrencyCode());
+        Product p = productsById.get(sku.getSku());
+        if (p != null)
+          p.sku = sku;
+        L.i("p: " + p);
       }
     }
     catch (JSONException e)
