@@ -102,7 +102,7 @@ public class Game extends Thread
   void showOptions()
   {
     state = STATE_OPTIONS;
-    if (!prodManager.purchasesUpdated)
+    if (!prodManager.purchasesUpdated || !prodManager.isConnected())
       updateProducts();
   }
 

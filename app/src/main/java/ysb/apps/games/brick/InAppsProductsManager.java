@@ -1,7 +1,6 @@
 package ysb.apps.games.brick;
 
 import android.app.Activity;
-import android.content.Context;
 
 import androidx.annotation.NonNull;
 
@@ -20,15 +19,10 @@ import com.android.billingclient.api.SkuDetailsResponseListener;
 
 import org.json.JSONException;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 
 import ysb.apps.utils.logs.L;
 
@@ -37,8 +31,6 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
 {
   public final static String PROD_AUTOSAVE = "ysb.apps.games.brick.autosave";
   public final static String PROD_20_LEVELS = "ysb.apps.games.brick.20_levels";
-
-  private static final String FILE_NAME = "ps.dat";
 
   public final static String[] PS = new String[]{"UNSPECIFIED_STATE", "PURCHASED", "PENDING"};
 
@@ -58,8 +50,6 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
     products.add(new Product(PROD_20_LEVELS));
     for (Product p : products)
       productsById.put(p.id, p);
-
-//    loadPurchases();
   }
 
   public void update()
@@ -128,14 +118,14 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
           @Override
           public void onSkuDetailsResponse(@NonNull BillingResult billingResult, List<SkuDetails> skuDetailsList)
           {            // Process the result.
-            L.i("onSDR, code:" + billingResult.getResponseCode() + "  , debugMsg: " + billingResult.getDebugMessage());
-            L.i("onSDR, skuDetailsList.size:" + skuDetailsList.size());
+            L.i("onSDR, code: " + billingResult.getResponseCode(), "debugMsg: " + billingResult.getDebugMessage());
+            L.i("onSDR, skuDetailsList.size: " + skuDetailsList.size());
             for (SkuDetails sku : skuDetailsList)
             {
-              L.i("onSDR, id, type:" + sku.getSku(), sku.getType());
-              L.i("onSDR, title:" + sku.getTitle());
-              L.i("onSDR, description:" + sku.getDescription());
-              L.i("onSDR, price:" + sku.getPrice(), sku.getPriceCurrencyCode());
+              L.i("onSDR, id, type: " + sku.getSku(), sku.getType());
+              L.i("onSDR, title: " + sku.getTitle());
+              L.i("onSDR, desc: " + sku.getDescription());
+              L.i("onSDR, price: " + sku.getPrice(), sku.getPriceCurrencyCode());
               Product p = productsById.get(sku.getSku());
               if (p != null)
               {
@@ -177,13 +167,10 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
         String productId = purchase.getSkus().size() > 0 ? purchase.getSkus().get(0) : "???";
         L.i("onQPR, product: " + productId);
         L.i("onQPR, time: " + new Date(purchase.getPurchaseTime()));
-        L.i("onQPR, package: " + purchase.getPackageName());
-        L.i("onQPR, account: " + Objects.requireNonNull(purchase.getAccountIdentifiers()).getObfuscatedAccountId());
         handlePurchase(purchase);
       }
 
       purchasesUpdated = true;
-      savePurchases();
     }
     else       // Handle any other error codes.
     {
@@ -208,11 +195,11 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
     if (p != null)
     {
       L.i("purchase, sku: " + p.sku.getTitle());
-      if (BuildConfig.DEBUG)
-      {
-        p.purchased = true;
-        return;
-      }
+//      if (BuildConfig.DEBUG)
+//      {
+//        p.purchased = true;
+//        return;
+//      }
 
       BillingFlowParams billingFlowParams = BillingFlowParams.newBuilder()
           .setSkuDetails(p.sku)
@@ -230,7 +217,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
   @Override
   public void onPurchasesUpdated(BillingResult billingResult, List<Purchase> purchases)
   {
-    L.i("onPU, code:" + billingResult.getResponseCode());
+    L.i("onPU, code: " + billingResult.getResponseCode());
     if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && purchases != null)
     {
       for (Purchase purchase : purchases)
@@ -244,8 +231,6 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
         L.i("onPU, account: " + purchase.getAccountIdentifiers());
         handlePurchase(purchase);
       }
-
-      savePurchases();
     }
     else if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.USER_CANCELED)
     {      // Handle an error caused by a user cancelling the purchase flow.
@@ -254,7 +239,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
     }
     else
     {      // Handle any other error codes.
-      L.w("onPU, failed with other reason, code:" + billingResult.getResponseCode(), "  msg:");
+      L.w("onPU, failed with other reason, code: " + billingResult.getResponseCode(), "  msg:");
       L.w(billingResult.getDebugMessage());
     }
   }
@@ -291,63 +276,6 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
   {
     Product p = productsById.get(id);
     return p != null && p.purchased;
-  }
-
-  private void savePurchases()
-  {
-    try
-    {
-      L.i("save products to local storage..");
-      FileOutputStream outputStream = activity.openFileOutput(FILE_NAME, Context.MODE_PRIVATE);
-      ByteBuffer buffer = ByteBuffer.allocate(products.size());
-      for (Product p : products)
-      {
-        L.i("p: " + p);
-        buffer.put((byte) (p.purchased ? 1 : 0));
-      }
-
-      outputStream.write(buffer.array());
-      outputStream.close();
-      L.i("saved.");
-    }
-    catch (Exception e)
-    {
-      e.printStackTrace();
-    }
-  }
-
-  private void loadPurchases()
-  {
-    try
-    {
-      L.i("get purchases from local storage..");
-      if (new File(activity.getFilesDir(), FILE_NAME).exists())
-      {
-        InputStream is = activity.openFileInput(FILE_NAME);
-        byte[] ba = new byte[2 * products.size()];
-        int length = is.read(ba);
-        is.close();
-        L.i("data length: " + length);
-        if (length == 0)
-          return;
-
-        for (int i = 0; i < products.size() && i < length; i++)
-        {
-          Product p = products.get(i);
-          p.purchased = (ba[i] == (byte) 1);
-          L.i("p: " + p);
-        }
-        L.i("purchases loaded from local storage");
-      }
-      else
-        L.i("local file not found..");
-
-    }
-    catch (Exception e)
-    {
-      L.w(e.getMessage());
-      e.printStackTrace();
-    }
   }
 
   private void createTestProducts()

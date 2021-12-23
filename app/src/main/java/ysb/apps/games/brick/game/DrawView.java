@@ -382,7 +382,7 @@ public class DrawView extends View
   {
     closeOptionsBtn.draw(canvas);
 
-    if (game.prodManager.products.size() == 0)
+    if (!game.prodManager.isConnected())
     {
       float textSize = 50 * dk;
       paints.text.setTextSize(textSize);
@@ -483,7 +483,7 @@ public class DrawView extends View
 
     paints.text.setTextSize(60 * dk);
     paints.text.setTextAlign(Paint.Align.RIGHT);
-    canvas.drawText("" + game.score, cupRect.right + 140 * dk, 110 * dk, paints.text);
+    canvas.drawText("" + game.score, cupRect.right + 130 * dk, 110 * dk, paints.text);
     if (game.prize > 0 && game.currentFigure != null)
     {
       paints.text.setTextAlign(Paint.Align.CENTER);
