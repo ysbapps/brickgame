@@ -100,7 +100,7 @@ public class DrawView extends View
     L.i("bounds: " + bounds);
     float dw = bounds.width() / 1000f;
     float dh = bounds.height() / 2000f;
-    offsets = new Rect(Math.round(150 * dw), Math.round(200 * dh), Math.round(150 * dw), Math.round(50 * dh));
+    offsets = new Rect(Math.round(150 * dw), Math.round(150 * dh), Math.round(150 * dw), Math.round(270 * dh));
     L.i("offsets: " + offsets);
 
     float maxSquareW = (bounds.width() - offsets.left - offsets.right) / (float) Cup.W;
@@ -111,6 +111,7 @@ public class DrawView extends View
 
     cupRect = new Rect(Math.round(bounds.centerX() - Cup.W * cupSquare / 2), offsets.top,
         Math.round(bounds.centerX() + Cup.W * cupSquare / 2), offsets.top + Math.round(Cup.H * cupSquare));
+    L.i("cupRect: " + cupRect, cupRect.width(), cupRect.height());
     float cupEdgeWidth = cupSquare / 5;
     cupEdges = new float[]{
         cupRect.left - cupEdgeWidth / 2, cupRect.top, cupRect.left - cupEdgeWidth / 2, cupRect.bottom + cupEdgeWidth,
@@ -260,7 +261,7 @@ public class DrawView extends View
 
     canvas.drawColor(Color.BLACK);
     int bx = bounds.width() > bgs[0].getWidth() ? (bounds.width() - bgs[0].getWidth()) / 2 : 0;
-    int by = cupRect.height() > bgs[0].getHeight() ? (cupRect.height() - bgs[0].getHeight()) / 2 : 0;
+    int by = cupRect.height() > bgs[0].getHeight() ? (cupRect.height() - bgs[0].getHeight()) / 2 : (bgs[0].getHeight() - cupRect.height() < 300 ? 20 : 0);
     int ii = game.state <= Game.STATE_PAUSED ? game.state : (game.state == Game.STATE_OPTIONS ? 0 : 1);
     if (game.state != Game.STATE_LOGS)
       canvas.drawBitmap(bgs[ii], bx, by, paints.cupContents);

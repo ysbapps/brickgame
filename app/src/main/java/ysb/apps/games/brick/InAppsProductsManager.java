@@ -25,8 +25,10 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 import ysb.apps.utils.logs.L;
 
@@ -182,9 +184,9 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
         L.i("onQPR, orderId: " + purchase.getOrderId());
         String productId = purchase.getSkus().size() > 0 ? purchase.getSkus().get(0) : "???";
         L.i("onQPR, product: " + productId);
-        L.i("onQPR, time: " + purchase.getPurchaseTime());
+        L.i("onQPR, time: " + new Date(purchase.getPurchaseTime()));
         L.i("onQPR, package: " + purchase.getPackageName());
-        L.i("onQPR, account: " + purchase.getAccountIdentifiers());
+        L.i("onQPR, account: " + Objects.requireNonNull(purchase.getAccountIdentifiers()).getObfuscatedAccountId());
         handlePurchase(purchase);
       }
 
