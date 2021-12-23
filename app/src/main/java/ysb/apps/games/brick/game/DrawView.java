@@ -14,6 +14,7 @@ import android.view.View;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import ysb.apps.games.brick.BuildConfig;
 import ysb.apps.games.brick.InAppsProductsManager;
 import ysb.apps.games.brick.Product;
 import ysb.apps.games.brick.R;
@@ -41,7 +42,7 @@ public class DrawView extends View
   private Button contBtn;
   private Button optionsBtn;
   private Button closeOptionsBtn;
-  private ProductPanel[] prodPanels = new ProductPanel[]{new ProductPanel(), new ProductPanel()};
+  private final ProductPanel[] prodPanels = new ProductPanel[]{new ProductPanel(), new ProductPanel()};
 
   private Paints paints;
   public static float dk;
@@ -64,6 +65,8 @@ public class DrawView extends View
   private final HashSet<Integer> helpActions = new HashSet<>();
   private final HashMap<Integer, Animation> animations = new HashMap<>();
   final SndManager sndManager;
+
+  private int logsEnableRectClickCount = 0;
 
 
   public DrawView(Context context)
@@ -160,8 +163,10 @@ public class DrawView extends View
         game.newGame(game.scores.getMaxAchievedLevel());
       else if (optionsBtn.rect.contains(x, y))
         game.showOptions();
-      else if (game.testMode() && x > bounds.right - 90 && y < 90)
+      else if (logsEnableRectClickCount > 5 && x > bounds.right - 90 && y < 90)
         game.state = Game.STATE_LOGS;
+      else if (x < 90 && y < 90)
+        logsEnableRectClickCount++;
 
       sndManager.play(R.raw.click);
       performClick();
@@ -221,11 +226,11 @@ public class DrawView extends View
             game.quitToStartPage();
             sndManager.play(R.raw.click);
           }
-          else if (game.testMode() && x < cupRect.left && y < cupRect.top)    // clear contents to pass level
+          else if (BuildConfig.VERSION_CODE < 20 && x < cupRect.left && y < cupRect.top)    // clear contents to pass level
           {
             game.cup.loadLevel((byte) 0);
           }
-          else if (game.testMode() && x > cupRect.right && y < cupRect.top) // jump to next level
+          else if (BuildConfig.VERSION_CODE < 20 && x > cupRect.right && y < cupRect.top) // jump to next level
           {
             game.level++;
             game.cup.loadLevel(game.level);
@@ -391,16 +396,18 @@ public class DrawView extends View
     float x = 20 * dk;
     float w = bounds.width() - 2 * x;
     float h = 200 * dk;
-    for (int i = 0; i < game.prodManager.products.size() - 1; i++)
+    float dy = h + 50 * dk;
+    float y = closeOptionsBtn.rect.top - 2 * dy;
+    for (int i = 0; i < game.prodManager.products.size(); i++)
     {
-      float y = closeOptionsBtn.rect.top - (i + 1) * (h + 50 * dk);
-      Product p = game.prodManager.products.get(game.prodManager.products.size() - 2 - i);
+      Product p = game.prodManager.products.get(i);
       prodPanels[i].setProduct(p);
       prodPanels[i].rect.left = x;
       prodPanels[i].rect.top = y;
       prodPanels[i].rect.right = x + w;
       prodPanels[i].rect.bottom = y + h;
       prodPanels[i].draw(canvas);
+      y += dy;
     }
   }
 
@@ -449,16 +456,16 @@ public class DrawView extends View
     float rx = cupRect.right + 74 * dk;
     canvas.drawText("next", lx, cupRect.top + 30 * dk, paints.text);
     canvas.drawText("level", lx, cupRect.top + 280 * dk, paints.text);
-    canvas.drawText("time", rx, cupRect.top + 30 * dk, paints.text);
+    canvas.drawText("time", rx, cupRect.top + 90 * dk, paints.text);
     canvas.drawText("speed", rx, cupRect.top + 280 * dk, paints.text);
-    canvas.drawText("score", rx, 50 * dk, paints.text);
-    paints.text.setTextSize(100 * dk);
-    canvas.drawText("" + game.level, lx, cupRect.top + 400 * dk, paints.text);
+    canvas.drawText("score", rx, 40 * dk, paints.text);
+    paints.text.setTextSize(90 * dk);
+    canvas.drawText("" + game.level, lx, cupRect.top + 380 * dk, paints.text);
     paints.text.setTextSize(40 * dk);
     long time = game.time() / 1000;
     String min = "0" + time / 60;
     String sec = "0" + time % 60;
-    canvas.drawText(min.substring(min.length() - 2) + ":" + sec.substring(sec.length() - 2), rx, cupRect.top + 90 * dk, paints.text);
+    canvas.drawText(min.substring(min.length() - 2) + ":" + sec.substring(sec.length() - 2), rx, cupRect.top + 150 * dk, paints.text);
     paints.text.setTextSize(60 * dk);
     canvas.drawText("" + game.speed(), rx, cupRect.top + 350 * dk, paints.text);
 
@@ -474,8 +481,9 @@ public class DrawView extends View
       canvas.drawText(game.message, cupRect.centerX(), y, paints.text);
     }
 
+    paints.text.setTextSize(60 * dk);
     paints.text.setTextAlign(Paint.Align.RIGHT);
-    canvas.drawText("" + game.score, cupRect.right + 140 * dk, 130 * dk, paints.text);
+    canvas.drawText("" + game.score, cupRect.right + 140 * dk, 110 * dk, paints.text);
     if (game.prize > 0 && game.currentFigure != null)
     {
       paints.text.setTextAlign(Paint.Align.CENTER);

@@ -2,7 +2,6 @@ package ysb.apps.games.brick.game;
 
 import java.util.HashSet;
 
-import ysb.apps.games.brick.BuildConfig;
 import ysb.apps.games.brick.InAppsProductsManager;
 import ysb.apps.games.brick.MainBrickActivity;
 import ysb.apps.games.brick.Product;
@@ -109,17 +108,12 @@ public class Game extends Thread
 
   void purchaseProduct(Product p)
   {
-    if (p == null)
-    {
-      prodManager.message = "Products not available";
-      return;
-    }
-
     L.i("purchasing product: " + p);
-    if (testMode())
-      p.purchased = true;
-    else
+    if (p != null)
       prodManager.purchase(p.id);
+    else
+      prodManager.message = "Products not available";
+
   }
 
   public void run()
@@ -411,8 +405,4 @@ public class Game extends Thread
     prodManager.disconnect();
   }
 
-  public boolean testMode()
-  {
-    return BuildConfig.DEBUG || prodManager.testMode;
-  }
 }

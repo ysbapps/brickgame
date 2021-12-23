@@ -37,7 +37,6 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
 {
   public final static String PROD_AUTOSAVE = "ysb.apps.games.brick.autosave";
   public final static String PROD_20_LEVELS = "ysb.apps.games.brick.20_levels";
-  public final static String PROD_TEST_MODE = "ysb.apps.games.brick.test.mode";
 
   private static final String FILE_NAME = "ps.dat";
 
@@ -49,7 +48,6 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
   public HashMap<String, Product> productsById = new HashMap<>();
   public String message = "";
   public boolean purchasesUpdated = false;
-  public boolean testMode;
 
 
   public InAppsProductsManager(Activity activity)
@@ -58,11 +56,10 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
 
     products.add(new Product(PROD_AUTOSAVE));
     products.add(new Product(PROD_20_LEVELS));
-    products.add(new Product(PROD_TEST_MODE));
     for (Product p : products)
       productsById.put(p.id, p);
 
-    loadPurchases();
+//    loadPurchases();
   }
 
   public void update()
@@ -123,7 +120,6 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
     List<String> skuList = new ArrayList<>();
     skuList.add(PROD_AUTOSAVE);
     skuList.add(PROD_20_LEVELS);
-    skuList.add(PROD_TEST_MODE);
     SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
     params.setSkusList(skuList).setType(BillingClient.SkuType.INAPP);
     billingClient.querySkuDetailsAsync(params.build(),
@@ -145,14 +141,10 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
               {
                 p.sku = sku;
                 L.i("onSDR, product found by id, p: " + p);
-                if (p.id.equals(PROD_TEST_MODE))
-                  testMode = true;
               }
               else
                 L.w("onSDR, product NOT found by id: " + sku.getSku());
             }
-
-            L.w("onSDR, testMode: " + testMode);
           }
         });
   }
@@ -191,7 +183,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
       }
 
       purchasesUpdated = true;
-      save();
+      savePurchases();
     }
     else       // Handle any other error codes.
     {
@@ -216,6 +208,12 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
     if (p != null)
     {
       L.i("purchase, sku: " + p.sku.getTitle());
+      if (BuildConfig.DEBUG)
+      {
+        p.purchased = true;
+        return;
+      }
+
       BillingFlowParams billingFlowParams = BillingFlowParams.newBuilder()
           .setSkuDetails(p.sku)
           .build();
@@ -247,7 +245,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
         handlePurchase(purchase);
       }
 
-      save();
+      savePurchases();
     }
     else if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.USER_CANCELED)
     {      // Handle an error caused by a user cancelling the purchase flow.
@@ -295,7 +293,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
     return p != null && p.purchased;
   }
 
-  private void save()
+  private void savePurchases()
   {
     try
     {
