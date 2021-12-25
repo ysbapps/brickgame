@@ -21,7 +21,7 @@ public class ProductPanel extends Button
   public void setProduct(Product p)
   {
     product = p;
-    enabled = !product.purchased;
+    enabled = product.state == Product.STATE_OPEN;
   }
 
   public Product getProduct()
@@ -45,7 +45,7 @@ public class ProductPanel extends Button
     float cx = rect.right - 2 * r + 14 * dk;
     float cy = rect.bottom - 2 * r + 14 * dk;
     canvas.drawCircle(cx, cy, r, p);
-    if (!enabled)   // purchased
+    if (product.state == Product.STATE_PURCHASED)   // purchased
     {
       p.setColor(Color.rgb(0, 164, 0));
       p.setStrokeWidth(14 * dk);

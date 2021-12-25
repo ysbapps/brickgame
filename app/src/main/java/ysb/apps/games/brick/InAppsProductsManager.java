@@ -42,6 +42,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
   public HashMap<String, Product> productsById = new HashMap<>();
   public String message = "";
   public boolean purchasesUpdated = false;
+  private long lastUpdateQueried = 0;
 
 
   public InAppsProductsManager(Activity activity)
@@ -56,8 +57,20 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
 
   public void update()
   {
+    long now = System.currentTimeMillis();
+    if (now - lastUpdateQueried < 5000)    // no often than once per 5 seconds
+    {
+      L.w("billingClient: update in process..");
+      return;
+    }
+
+    lastUpdateQueried = now;
     if (isConnected())
       disconnect();
+
+    for (Product p : products)
+      if (p.state == Product.STATE_PROCESSING && now - p.stateUpdated > 1 * 60000) // longer than 5 minutes - reset processing state
+        p.setState(Product.STATE_OPEN);
 
     L.i("billingClient init..");
     billingClient = BillingClient.newBuilder(activity)
@@ -132,7 +145,8 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
               if (p != null)
               {
                 p.sku = sku;
-                L.i("onSDR, product found by id, p: " + p);
+                L.i("onSDR, product found by id, p:");
+                L.i(p);
               }
               else
                 L.w("onSDR, product NOT found by id: " + sku.getSku());
@@ -182,11 +196,11 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
     }
   }
 
-  private void setProductPurchased(String productId)
+  private void setProductState(String productId, int state)
   {
     Product p = productsById.get(productId);
     if (p != null)
-      p.purchased = true;
+      p.setState(state);
     else
       L.w("setPP, product NOT found by id: " + productId);
   }
@@ -250,10 +264,10 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
   private void handlePurchase(Purchase purchase)
   {
     L.i("handlePurchase, state: " + purchase.getPurchaseState(), ps(purchase.getPurchaseState()));
+    String productId = purchase.getSkus().size() > 0 ? purchase.getSkus().get(0) : "???";
     if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED)
     {
-      String productId = purchase.getSkus().size() > 0 ? purchase.getSkus().get(0) : "???";
-      setProductPurchased(productId);
+      setProductState(productId, Product.STATE_PURCHASED);
       L.i("handlePurchase, check acknowledge: " + purchase.isAcknowledged());
       if (!purchase.isAcknowledged())
       {
@@ -267,6 +281,10 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
 
 //      consume(purchase);  // to enable purchased product for testing
     }
+    else if (purchase.getPurchaseState() == Purchase.PurchaseState.PENDING)
+      setProductState(productId, Product.STATE_PROCESSING);
+    else
+      setProductState(productId, Product.STATE_OPEN);
   }
 
   private void consume(Purchase purchase)
@@ -300,7 +318,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
   public boolean isProductPurchased(String id)
   {
     Product p = productsById.get(id);
-    return p != null && p.purchased;
+    return p != null && p.state == Product.STATE_PURCHASED;
   }
 
   private void createTestProducts()

@@ -52,4 +52,12 @@ public class MainBrickActivity extends AppCompatActivity
     super.onDestroy();
   }
 
+  @Override
+  public void onResume()
+  {
+    L.i("Activity resumed");
+    super.onResume();
+    Game.game.updateProducts();
+  }
+
 }
