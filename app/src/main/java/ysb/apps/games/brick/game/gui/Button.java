@@ -48,4 +48,10 @@ public class Button
     }
   }
 
+  public boolean contains(float x, float y, float wider)
+  {
+    RectF wr = new RectF(rect);
+    wr.inset(-wider * rect.width(), -wider * rect.height());
+    return wr.contains(x, y);
+  }
 }

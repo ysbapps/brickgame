@@ -14,7 +14,6 @@ import android.view.View;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import ysb.apps.games.brick.BuildConfig;
 import ysb.apps.games.brick.InAppsProductsManager;
 import ysb.apps.games.brick.Product;
 import ysb.apps.games.brick.R;
@@ -40,8 +39,8 @@ public class DrawView extends View
   private Button sndOffBtn;
   private Button startBtn;
   private Button contBtn;
-  private Button optionsBtn;
-  private Button closeOptionsBtn;
+  private Button productsBtn;
+  private Button closeProductsBtn;
   private final ProductPanel[] prodPanels = new ProductPanel[]{new ProductPanel(), new ProductPanel()};
 
   private Paints paints;
@@ -123,12 +122,12 @@ public class DrawView extends View
 
     startBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.start), cupRect.left - 80 * dk, bounds.bottom - Math.round(600 * dk));
     contBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.cont), cupRect.left - 80 * dk, startBtn.rect.bottom + 50 * dk);
-    optionsBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.opts), cupRect.right - 30 * dk, bounds.bottom - Math.round(300 * dk));
-    closeOptionsBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.close_opt), optionsBtn.rect.left, bounds.bottom - 1.5f * optionsBtn.rect.height());
+    productsBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.cart), cupRect.right - 50 * dk, bounds.bottom - Math.round(300 * dk));
+    closeProductsBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.close_opt), productsBtn.rect.left, productsBtn.rect.top);
 
     BitmapFactory.Options options = new BitmapFactory.Options();
-    options.inSampleSize = dk < 0.8 ? 2 : 1;
     options.inJustDecodeBounds = false;
+    options.inSampleSize = dk < 0.8 ? 2 : 1;
     pauseBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.pause, options), cupRect.right + 20 * dk, cupRect.top + 470 * dk);
     resumeBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.resume, options), pauseBtn.rect.left, pauseBtn.rect.top);
     Bitmap quitImg = BitmapFactory.decodeResource(getResources(), R.drawable.quit, options);
@@ -161,7 +160,7 @@ public class DrawView extends View
         game.newGame((byte) 1);
       else if (contBtn.enabled && contBtn.rect.contains(x, y))
         game.newGame(game.scores.getMaxAchievedLevel());
-      else if (optionsBtn.rect.contains(x, y))
+      else if (productsBtn.rect.contains(x, y))
         game.showOptions();
       else if (logsEnableRectClickCount > 5 && x > bounds.right - 90 && y < 90)
         game.state = Game.STATE_LOGS;
@@ -173,7 +172,7 @@ public class DrawView extends View
     }
     else if (game.state == Game.STATE_OPTIONS && touch.action == Touch.ACTION_UP)   // options
     {
-      if (closeOptionsBtn.rect.contains(x, y))
+      if (closeProductsBtn.rect.contains(x, y))
         game.state = Game.STATE_NOT_STARTED;
       else
       {
@@ -204,7 +203,7 @@ public class DrawView extends View
       {
         if (touch.dist < minSlideDist)   // click
         {
-          if (pauseBtn.rect.contains(x, y))
+          if (pauseBtn.contains(x, y, 0.3f))
           {
             if (game.state == Game.STATE_GAME)
             {
@@ -216,7 +215,7 @@ public class DrawView extends View
 
             sndManager.play(R.raw.click);
           }
-          else if (game.state == Game.STATE_GAME && sndOnBtn.rect.contains(x, y))
+          else if (game.state == Game.STATE_GAME && sndOnBtn.contains(x, y, 0.3f))
           {
             sndManager.soundsOn = !sndManager.soundsOn;
             sndManager.play(R.raw.click);
@@ -226,11 +225,11 @@ public class DrawView extends View
             game.quitToStartPage();
             sndManager.play(R.raw.click);
           }
-          else if (BuildConfig.VERSION_CODE < 20 && x < cupRect.left && y < cupRect.top)    // clear contents to pass level
+          else if (logsEnableRectClickCount > 10 && x < cupRect.left && y < cupRect.top)    // clear contents to pass level
           {
             game.cup.loadLevel((byte) 0);
           }
-          else if (BuildConfig.VERSION_CODE < 20 && x > cupRect.right && y < cupRect.top) // jump to next level
+          else if (logsEnableRectClickCount > 10 && x > cupRect.right && y < cupRect.top) // jump to next level
           {
             game.level++;
             game.cup.loadLevel(game.level);
@@ -375,12 +374,12 @@ public class DrawView extends View
       canvas.drawText("" + level, x, y, paints.text);
     }
 
-    optionsBtn.draw(canvas);
+    productsBtn.draw(canvas);
   }
 
   private void drawOptionsPage(Canvas canvas)
   {
-    closeOptionsBtn.draw(canvas);
+    closeProductsBtn.draw(canvas);
 
     if (!game.prodManager.isConnected())
     {
@@ -397,7 +396,7 @@ public class DrawView extends View
     float w = bounds.width() - 2 * x;
     float h = 200 * dk;
     float dy = h + 50 * dk;
-    float y = closeOptionsBtn.rect.top - 2 * dy;
+    float y = closeProductsBtn.rect.top - 2 * dy;
     for (int i = 0; i < game.prodManager.products.size(); i++)
     {
       Product p = game.prodManager.products.get(i);

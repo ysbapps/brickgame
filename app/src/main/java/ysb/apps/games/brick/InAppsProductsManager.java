@@ -10,6 +10,8 @@ import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.ConsumeParams;
+import com.android.billingclient.api.ConsumeResponseListener;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesResponseListener;
 import com.android.billingclient.api.PurchasesUpdatedListener;
@@ -159,6 +161,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
     L.i("onQPR, code:" + billingResult.getResponseCode());
     if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK)
     {
+      L.i("onQPR, purchases.size: " + list.size());
       for (Purchase purchase : list)
       {
         L.i("onQPR, state: " + purchase.getPurchaseState(), ps(purchase.getPurchaseState()));
@@ -261,7 +264,29 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
                 .build();
         billingClient.acknowledgePurchase(acknowledgePurchaseParams, this);
       }
+
+//      consume(purchase);  // to enable purchased product for testing
     }
+  }
+
+  private void consume(Purchase purchase)
+  {
+    L.i("consume purchase: " + purchase);
+    L.i("token: " + purchase.getPurchaseToken());
+    L.i("orderId: " + purchase.getOrderId());
+    ConsumeParams consumeParams =
+        ConsumeParams.newBuilder()
+            .setPurchaseToken(purchase.getPurchaseToken())
+            .build();
+    billingClient.consumeAsync(consumeParams, new ConsumeResponseListener()
+    {
+      @Override
+      public void onConsumeResponse(@NonNull BillingResult billingResult, @NonNull String purchaseToken)
+      {
+        if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK)
+          L.w("oCR, consumed, token: " + purchaseToken);
+      }
+    });
   }
 
   @Override
