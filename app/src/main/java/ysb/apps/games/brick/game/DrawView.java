@@ -210,7 +210,7 @@ public class DrawView extends View
               game.pause();
               animations.clear();
             }
-            else if (game.state == Game.STATE_PAUSED && game.hasMoreLevels())
+            else if (game.state == Game.STATE_PAUSED)
               game.resumeFromPause();
 
             sndManager.play(R.raw.click);
@@ -469,7 +469,7 @@ public class DrawView extends View
     canvas.drawText("" + game.speed(), rx, cupRect.top + 350 * dk, paints.text);
 
     paints.text.setTextSize(70 * dk);
-    paints.text.setColor(game.state == Game.STATE_GAME_OVER ? Color.RED : Color.WHITE);
+    paints.text.setColor(Color.WHITE);
     if (game.message != null)
     {
       int c = paints.text.getColor();
@@ -587,7 +587,7 @@ public class DrawView extends View
 
   private void drawGameControls(Canvas canvas)
   {
-    if (game.state == Game.STATE_PAUSED && game.hasMoreLevels())
+    if (game.state == Game.STATE_PAUSED)
       resumeBtn.draw(canvas);
 
     if (game.state == Game.STATE_PAUSED || game.state == Game.STATE_GAME_OVER)

@@ -355,7 +355,7 @@ public class Game extends Thread
     }
     else
     {
-      state = STATE_PAUSED;
+      state = STATE_GAME_OVER;
       message = "All levels completed";
       return false;
     }
