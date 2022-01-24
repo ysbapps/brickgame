@@ -57,10 +57,10 @@ public class DrawView extends View
   public static HashMap<Integer, Integer> figures = new HashMap<>();
 
   private final Bitmap[] bgs = new Bitmap[3];
-  private final Bitmap left;
-  private final Bitmap right;
-  private final Bitmap rotate;
-  private final Bitmap drop;
+  private Bitmap left;
+  private Bitmap right;
+  private Bitmap rotate;
+  private Bitmap drop;
   private final HashSet<Integer> helpActions = new HashSet<>();
   private final HashMap<Integer, Animation> animations = new HashMap<>();
   final SndManager sndManager;
@@ -72,20 +72,6 @@ public class DrawView extends View
   {
     super(context);
     L.i("View created");
-
-    BitmapFactory.Options options = new BitmapFactory.Options();
-    options.inSampleSize = 2;
-    options.inJustDecodeBounds = false;
-    bgs[0] = BitmapFactory.decodeResource(getResources(), R.drawable.start_bg, options);
-    bgs[1] = BitmapFactory.decodeResource(getResources(), R.drawable.bg, options);
-    L.i("bg: " + bgs[1].getWidth() + 'x' + bgs[1].getHeight());
-    bgs[2] = BitmapFactory.decodeResource(getResources(), R.drawable.pause_bg, options);
-
-    options.inSampleSize = 4;
-    left = BitmapFactory.decodeResource(getResources(), R.drawable.demo_left, options);
-    right = BitmapFactory.decodeResource(getResources(), R.drawable.demo_right, options);
-    rotate = BitmapFactory.decodeResource(getResources(), R.drawable.demo_rotate, options);
-    drop = BitmapFactory.decodeResource(getResources(), R.drawable.demo_drop, options);
 
     sndManager = new SndManager(context);
     sndManager.addSound(R.raw.click);
@@ -100,9 +86,7 @@ public class DrawView extends View
   {
     bounds = canvas.getClipBounds();
     L.i("bounds: " + bounds);
-    float dw = bounds.width() / 1000f;
-    float dh = bounds.height() / 2000f;
-    offsets = new Rect(Math.round(150 * dw), Math.round(150 * dh), Math.round(150 * dw), Math.round(270 * dh));
+    offsets = new Rect(160, 160, 160, 160);
     L.i("offsets: " + offsets);
 
     float maxSquareW = (bounds.width() - offsets.left - offsets.right) / (float) Cup.W;
@@ -120,13 +104,26 @@ public class DrawView extends View
         cupRect.left, cupRect.bottom + cupEdgeWidth / 2, cupRect.right, cupRect.bottom + cupEdgeWidth / 2,
         cupRect.right + cupEdgeWidth / 2, cupRect.bottom + cupEdgeWidth, cupRect.right + cupEdgeWidth / 2, cupRect.top};
 
+    boolean tablet = (double) bounds.height() / bounds.width() < 1.75;
+    BitmapFactory.Options options = new BitmapFactory.Options();
+    options.inSampleSize = 2;
+    options.inJustDecodeBounds = false;
+    bgs[0] = BitmapFactory.decodeResource(getResources(), (tablet ? R.drawable.start_bg_l : R.drawable.start_bg), options);
+    bgs[1] = BitmapFactory.decodeResource(getResources(), (tablet ? R.drawable.bg_l : R.drawable.bg), options);
+    L.i("bg: " + bgs[1].getWidth() + 'x' + bgs[1].getHeight());
+    bgs[2] = BitmapFactory.decodeResource(getResources(), (tablet ? R.drawable.pause_bg_l : R.drawable.pause_bg), options);
+
+    options.inSampleSize = 4;
+    left = BitmapFactory.decodeResource(getResources(), R.drawable.demo_left, options);
+    right = BitmapFactory.decodeResource(getResources(), R.drawable.demo_right, options);
+    rotate = BitmapFactory.decodeResource(getResources(), R.drawable.demo_rotate, options);
+    drop = BitmapFactory.decodeResource(getResources(), R.drawable.demo_drop, options);
+
     startBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.start), cupRect.left - 80 * dk, bounds.bottom - Math.round(600 * dk));
     contBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.cont), cupRect.left - 80 * dk, startBtn.rect.bottom + 50 * dk);
     productsBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.cart), cupRect.right - 50 * dk, bounds.bottom - Math.round(300 * dk));
     closeProductsBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.close_opt), productsBtn.rect.left, productsBtn.rect.top);
 
-    BitmapFactory.Options options = new BitmapFactory.Options();
-    options.inJustDecodeBounds = false;
     options.inSampleSize = dk < 0.8 ? 2 : 1;
     pauseBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.pause, options), cupRect.right + 20 * dk, cupRect.top + 470 * dk);
     resumeBtn = new Button(BitmapFactory.decodeResource(getResources(), R.drawable.resume, options), pauseBtn.rect.left, pauseBtn.rect.top);
@@ -543,10 +540,10 @@ public class DrawView extends View
     paints.cupContents.setStyle(Paint.Style.FILL);
     paints.cupContents.setAlpha(255);
 
-    float left = cupRect.left + x * cupSquare;
-    float top = cupRect.top + y * cupSquare;
-    float right = cupRect.left + (x + 1) * cupSquare;
-    float bottom = cupRect.top + (y + 1) * cupSquare;
+    int left = Math.round(cupRect.left + x * cupSquare);
+    int top = Math.round(cupRect.top + y * cupSquare);
+    int right = Math.round(cupRect.left + (x + 1) * cupSquare);
+    int bottom = Math.round(cupRect.top + (y + 1) * cupSquare);
     canvas.drawRect(left, top, right, bottom, paints.cupContents);
 
     int c = paints.cupContents.getColor();
@@ -555,7 +552,7 @@ public class DrawView extends View
     paints.cupContents.setStyle(Paint.Style.STROKE);
     paints.cupContents.setStrokeWidth(Math.round(2 * dk));
     paints.cupContents.setAlpha(border ? 255 : 30);
-    canvas.drawRect(left, top, right - dk, bottom - dk, paints.cupContents);
+    canvas.drawRect(left, top, right - 1, bottom - 1, paints.cupContents);
     float ld = cupSquare / 3.5f;
     paints.cupContents.setColor(Color.GRAY);
     paints.cupContents.setAlpha(border ? 255 : 150);
