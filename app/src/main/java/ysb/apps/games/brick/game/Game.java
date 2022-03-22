@@ -78,6 +78,7 @@ public class Game extends Thread
     if (state != STATE_NOT_STARTED)
       return;
 
+    L.i("newGame, level: " + level);
     levelStarted = System.currentTimeMillis();
     this.level = level;
     score = 0;
@@ -118,7 +119,7 @@ public class Game extends Thread
 
   public void run()
   {
-    L.i("Game is started.");
+    L.i("App is started.");
     try
     {
       while (isAlive)
@@ -261,6 +262,7 @@ public class Game extends Thread
 
   private void finishGame()
   {
+    L.i("finishGame");
     state = STATE_GAME_OVER;
     message = "GAME OVER";
     if (score > 0)
@@ -327,21 +329,25 @@ public class Game extends Thread
 
   private boolean nextLevel()
   {
+    L.i("nextLevel..");
     view.sndManager.play(R.raw.level);
     currentFigure = null;
     figureCount = 0;
     repaint();
-    sleepMs(500);
+    sleepMs(state == STATE_NOT_STARTED ? 0 : 500);   // handle game quit
     prize = 10 * level * level;
     score += prize;
     message = "Bonus  +" + prize;
     scores.addScore(score, level);
     repaint();
-    sleepMs(1500);
+    sleepMs(state == STATE_NOT_STARTED ? 0 : 1500);   // handle game quit
     prize = 0;
     message = null;
     repaint();
-    sleepMs(500);
+    sleepMs(state == STATE_NOT_STARTED ? 0 : 500);   // handle game quit
+    if (state == STATE_NOT_STARTED)
+      return false;
+
     if (hasMoreLevels())
     {
       level++;
