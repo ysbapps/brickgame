@@ -289,6 +289,8 @@ public class DrawView extends View
         for (Animation animation : animations.values())
           animation.draw(canvas);
       }
+      else if (game.state == Game.STATE_DROPPING && animations.size() > 0)
+        animations.clear();
     }
 
 //    canvas.drawRect(cupRect.right, cupRect.top - 100, bounds.right, cupRect.top, paints.debugLine);

@@ -305,10 +305,11 @@ public class Game extends Thread
   void needHelp(HashSet<Integer> actions)
   {
     actions.clear();
-    long seconds = (System.currentTimeMillis() - figureStartTime) / 1000;
-    if (level == 1 && figureCount < 10 && seconds > figureCount && !figureActions.contains(DROP) && System.currentTimeMillis() - lastActionTime > 2000)
+    long now = System.currentTimeMillis();
+    double seconds = (now - figureStartTime) / 1000.0;
+    if (level == 1 && figureCount < 10 && !figureActions.contains(DROP) && now - lastActionTime > (figureCount > 5 ? 4000 : 2000))
     {
-      if (!figureActions.contains(MOVE_LEFT) && !figureActions.contains(MOVE_RIGHT) && figureCount < 7 && seconds < 7 + figureCount / 2)
+      if (!figureActions.contains(MOVE_LEFT) && !figureActions.contains(MOVE_RIGHT) && seconds < 6)
       {
         actions.add(MOVE_LEFT);
         actions.add(MOVE_RIGHT);
@@ -317,9 +318,9 @@ public class Game extends Thread
       currentFigure.rotate();
       boolean canRotate = cup.isFigurePositionValid(currentFigure);
       currentFigure.rotateBack();
-      if (currentFigure.type != Figure.TYPE_SQUARE && canRotate && !figureActions.contains(ROTATE) && figureCount < 7 && seconds < 7 + figureCount / 2)
+      if (currentFigure.type != Figure.TYPE_SQUARE && canRotate && !figureActions.contains(ROTATE) && seconds < 6)
         actions.add(ROTATE);
-      if (actions.size() == 0 && !figureActions.contains(DROP) && (System.currentTimeMillis() - lastActionTime) / 1000 > 3 + figureCount / 2)
+      if (actions.size() == 0 && !figureActions.contains(DROP))
         actions.add(DROP);
     }
   }
@@ -332,10 +333,11 @@ public class Game extends Thread
     repaint();
     sleepMs(500);
     prize = 10 * level * level;
+    score += prize;
     message = "Bonus  +" + prize;
+    scores.addScore(score, level);
     repaint();
     sleepMs(1500);
-    score += prize;
     prize = 0;
     message = null;
     repaint();
