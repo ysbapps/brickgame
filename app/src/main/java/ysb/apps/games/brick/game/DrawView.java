@@ -223,15 +223,6 @@ public class DrawView extends View
             game.quitToStartPage();
             sndManager.play(R.raw.click);
           }
-          else if (logsEnableRectClickCount > 10 && x < cupRect.left && y < cupRect.top)    // clear contents to pass level
-          {
-            game.cup.loadLevel((byte) 0);
-          }
-          else if (logsEnableRectClickCount > 10 && x > cupRect.right && y < cupRect.top) // jump to next level
-          {
-            game.level++;
-            game.cup.loadLevel(game.level);
-          }
           else if (isFigure && touch.y > cupRect.top && touch.x < bounds.width() / 2f)
           {
             game.action(Game.MOVE_LEFT);
