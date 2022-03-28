@@ -56,7 +56,7 @@ public class DrawView extends View
   public static String info = "";
   public static HashMap<Integer, Integer> figures = new HashMap<>();
 
-  private final Bitmap[] bgs = new Bitmap[3];
+  private final Bitmap[] bgs = new Bitmap[4];
   private Bitmap left;
   private Bitmap right;
   private Bitmap rotate;
@@ -112,6 +112,7 @@ public class DrawView extends View
     bgs[1] = BitmapFactory.decodeResource(getResources(), (tablet ? R.drawable.bg_l : R.drawable.bg), options);
     L.i("bg: " + bgs[1].getWidth() + 'x' + bgs[1].getHeight());
     bgs[2] = BitmapFactory.decodeResource(getResources(), (tablet ? R.drawable.pause_bg_l : R.drawable.pause_bg), options);
+    bgs[3] = BitmapFactory.decodeResource(getResources(), (tablet ? R.drawable.cart_bg_l : R.drawable.cart_bg), options);
 
     options.inSampleSize = 4;
     left = BitmapFactory.decodeResource(getResources(), R.drawable.demo_left, options);
@@ -263,14 +264,12 @@ public class DrawView extends View
     canvas.drawColor(Color.BLACK);
     int bx = bounds.width() > bgs[0].getWidth() ? (bounds.width() - bgs[0].getWidth()) / 2 : 0;
     int by = cupRect.height() > bgs[0].getHeight() ? (cupRect.height() - bgs[0].getHeight()) / 2 : (bgs[0].getHeight() - cupRect.height() < 300 ? 20 : 0);
-    int ii = game.state <= Game.STATE_PAUSED ? game.state : (game.state == Game.STATE_OPTIONS ? 0 : 1);
+    int ii = game.state <= Game.STATE_PAUSED ? game.state : (game.state == Game.STATE_OPTIONS ? 3 : 1);
     if (game.state != Game.STATE_LOGS)
       canvas.drawBitmap(bgs[ii], bx, by, paints.cupContents);
 
     if (game.state == Game.STATE_NOT_STARTED)
       drawStartPage(canvas);
-//    else if (game.state == Game.STATE_CHOOSE_LEVEL)
-//      drawChooseLevelScreen(canvas);
     else if (game.state == Game.STATE_OPTIONS)
       drawOptionsPage(canvas);
     else if (game.state == Game.STATE_LOGS)
@@ -427,23 +426,6 @@ public class DrawView extends View
       canvas.drawText(lr.text, bounds.left + textSize * 7, y, paints.text);
     }
   }
-
-//  private void drawChooseLevelScreen(Canvas canvas)
-//  {
-//    paints.control.setColor(paints.controlColor);
-//    paints.control.setStyle(Paint.Style.STROKE);
-//    paints.control.setStrokeWidth(8);
-//    paints.text.setTextSize(70 * dk);
-//    paints.text.setTextAlign(Paint.Align.CENTER);
-//    paints.text.setColor(Color.BLUE);
-//    float r = (float) startTouch.height() / 2;
-//    int sx =
-//    for (int x = 0; x<3;x++)
-//    for (int y = 0; y<10;y++)
-//    canvas.drawCircle(startTouch.left + r, startTouch.top + r, r, paints.control);
-//
-//
-//  }
 
   private void drawGameInfo(Canvas canvas)
   {
