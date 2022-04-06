@@ -48,6 +48,8 @@ public class DrawView extends View
 
   private final Touch touch = new Touch();
 
+  private long droppedFigureStartTime = 0;
+
   private int count = 0;
   private int countPerSec = 0;
   private int fps = 0;
@@ -479,8 +481,18 @@ public class DrawView extends View
     paints.cupEdge.setColor(c);
 
     paints.cupContents.setColor(paints.figureColor);    // figures
-    if (System.currentTimeMillis() > game.levelStarted + 1000)
+    long now = System.currentTimeMillis();
+    if (now > game.levelStarted + 1000)
       drawFigure(canvas, game.currentFigure);
+
+    if (game.droppedFigure != null && now > game.levelStarted + 1000 + game.level * 1000 && now > game.lastActionTime + game.level * 1000)
+    {
+      if (droppedFigureStartTime == 0)
+        droppedFigureStartTime = now;
+      drawFigure(canvas, game.droppedFigure);
+    }
+    else
+      droppedFigureStartTime = 0;
 
     drawFigure(canvas, game.nextFigure);
 
@@ -494,7 +506,7 @@ public class DrawView extends View
         if (game.cup.contents[y][x] > 0)
         {
           paints.cupContents.setColor(isRowComplete ? paints.cupColors[0] : paints.cupColors[game.cup.contents[y][x]]);
-          drawCupSquare(canvas, x, y, !isRowComplete && game.cup.contents[y][x] == 1);
+          drawCupSquare(canvas, x, y, !isRowComplete && game.cup.contents[y][x] == 1, false);
         }
     }
   }
@@ -505,15 +517,27 @@ public class DrawView extends View
       for (int x = 0; x < Figure.SIZE; x++)
         if (figure != null && figure.getCurrContents()[y][x])
           if (figure == game.currentFigure)
-            drawCupSquare(canvas, figure.pos.x + x, figure.pos.y + y, true);
+            drawCupSquare(canvas, figure.pos.x + x, figure.pos.y + y, true, false);
+          else if (figure == game.droppedFigure)
+            drawCupSquare(canvas, figure.pos.x + x, figure.pos.y + y, true, true);
           else
             drawNextFigureSquare(canvas, x, y, figure.alignShift());
   }
 
-  private void drawCupSquare(Canvas canvas, int x, int y, boolean border)    // draw cupSquare on position
+  private void drawCupSquare(Canvas canvas, int x, int y, boolean border, boolean dropped)    // draw cupSquare on position
   {
     paints.cupContents.setStyle(Paint.Style.FILL);
-    paints.cupContents.setAlpha(255);
+    int alpha = 255;
+    if (dropped)
+    {
+      float v = (System.currentTimeMillis() - droppedFigureStartTime) / 2000f;
+      while (v > 2)
+        v -= 2;
+      if (v > 1)
+        v = 2 - v;
+      alpha = Math.round(48 + 92 * v);
+    }
+    paints.cupContents.setAlpha(alpha);
 
     int left = Math.round(cupRect.left + x * cupSquare);
     int top = Math.round(cupRect.top + y * cupSquare);
@@ -526,11 +550,11 @@ public class DrawView extends View
     paints.cupContents.setColor(Color.DKGRAY);
     paints.cupContents.setStyle(Paint.Style.STROKE);
     paints.cupContents.setStrokeWidth(Math.round(2 * dk));
-    paints.cupContents.setAlpha(border ? 255 : 30);
+    paints.cupContents.setAlpha(border ? alpha : alpha / 8);
     canvas.drawRect(left, top, right - 1, bottom - 1, paints.cupContents);
     float ld = cupSquare / 3.5f;
     paints.cupContents.setColor(Color.GRAY);
-    paints.cupContents.setAlpha(border ? 255 : 150);
+    paints.cupContents.setAlpha(border ? alpha : alpha / 2);
     canvas.drawLine(left + ld, bottom - 1.5f * ld, right - 1.5f * ld, top + ld, paints.cupContents);
     canvas.drawLine(left + ld, bottom - ld, right - ld, top + ld, paints.cupContents);
     canvas.drawLine(left + 1.5f * ld, bottom - ld, right - ld, top + 1.5f * ld, paints.cupContents);
@@ -551,6 +575,7 @@ public class DrawView extends View
 
   private void drawNextFigureSquare(Canvas canvas, int x, int y, byte alignShift)    // draw next figure cupSquare
   {
+    paints.cupContents.setAlpha(255);
     long square = Math.round(offsets.left / 4.2);
     float sx = cupRect.left - 18 * dk - 4 * square + alignShift * 0.5f * square;
     float sy = cupRect.top + 30 * dk;

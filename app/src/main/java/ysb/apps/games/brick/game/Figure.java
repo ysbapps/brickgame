@@ -42,6 +42,17 @@ class Figure
     createContents();
   }
 
+  public Figure cloneDropped()
+  {
+    Figure dropped = new Figure(false);
+    dropped.type = type;
+    dropped.pos.x = pos.x;
+    dropped.rotation = rotation;
+    dropped.createContents();
+
+    return dropped;
+  }
+
   boolean[][] getCurrContents()
   {
     return contents[rotation];

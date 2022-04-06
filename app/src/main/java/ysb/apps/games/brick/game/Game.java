@@ -29,8 +29,9 @@ public class Game extends Thread
   int state = STATE_NOT_STARTED;
   Figure currentFigure;
   Figure nextFigure;
+  Figure droppedFigure;
   long levelStarted;
-  private long lastActionTime;
+  long lastActionTime;
   private long wasOnPause;
   byte level;
   int score;
@@ -86,6 +87,7 @@ public class Game extends Thread
     message = null;
     cup.loadLevel(level);
     currentFigure = new Figure(level == 1);
+    makeDroppedFigure();
     nextFigure = new Figure(level == 1);
     figureCount = 0;
     figureActions.clear();
@@ -155,6 +157,9 @@ public class Game extends Thread
           sleepMs(10);
 
         currentFigure.pos.y++;
+        if (droppedFigure != null && droppedFigure.pos.y - currentFigure.pos.y < 4)
+          droppedFigure = null;
+
         if (cup.isFigurePositionValid(currentFigure))      // end of normal loop (figure is falling or dropping)
           continue;
 
@@ -181,6 +186,7 @@ public class Game extends Thread
           continue;
 
         currentFigure = nextFigure;
+        makeDroppedFigure();
         figureCount++;
         figureActions.clear();
         figureStartTime = lastActionTime = System.currentTimeMillis();
@@ -199,6 +205,24 @@ public class Game extends Thread
       e.printStackTrace();
     }
     L.i("Game is stopped.");
+  }
+
+  private void makeDroppedFigure()
+  {
+    if (level > 5)
+    {
+      droppedFigure = null;
+      return;
+    }
+
+    droppedFigure = currentFigure.cloneDropped();
+    while (cup.isFigurePositionValid(droppedFigure))
+      droppedFigure.pos.y++;
+
+    droppedFigure.pos.y--;
+
+    if (droppedFigure.pos.y - currentFigure.pos.y < 4)
+      droppedFigure = null;
   }
 
   public void pause()
@@ -296,8 +320,12 @@ public class Game extends Thread
       case DROP:
         state = STATE_DROPPING;
         currentFigure.movable = false;
+        droppedFigure = null;
         break;
     }
+
+    if (state != STATE_DROPPING)
+      makeDroppedFigure();
 
     figureActions.add(action);
     lastActionTime = System.currentTimeMillis();
@@ -309,7 +337,7 @@ public class Game extends Thread
     actions.clear();
     long now = System.currentTimeMillis();
     double seconds = (now - figureStartTime) / 1000.0;
-    if (level == 1 && figureCount < 10 && !figureActions.contains(DROP) && now - lastActionTime > (figureCount > 5 ? 4000 : 2000))
+    if (level == 1 && figureCount < 10 && !figureActions.contains(DROP) && now - lastActionTime > (figureCount > 5 ? 2000 : 600))
     {
       if (!figureActions.contains(MOVE_LEFT) && !figureActions.contains(MOVE_RIGHT) && seconds < 6)
       {
