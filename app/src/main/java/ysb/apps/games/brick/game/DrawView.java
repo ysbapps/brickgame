@@ -372,7 +372,7 @@ public class DrawView extends View
   {
     closeProductsBtn.draw(canvas);
 
-    if (!game.prodManager.isConnected())
+    if (!game.prodManager.isConnected() || !game.prodManager.productDetailsUpdated)
     {
       float textSize = 50 * dk;
       paints.text.setTextSize(textSize);

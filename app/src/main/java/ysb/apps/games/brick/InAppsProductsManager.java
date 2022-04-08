@@ -42,6 +42,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
   public HashMap<String, Product> productsById = new HashMap<>();
   public String message = "";
   public boolean purchasesUpdated = false;
+  public boolean productDetailsUpdated = false;
   private long lastUpdateQueried = 0;
 
 
@@ -69,7 +70,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
       disconnect();
 
     for (Product p : products)
-      if (p.state == Product.STATE_PROCESSING && now - p.stateUpdated > 1 * 60000) // longer than 5 minutes - reset processing state
+      if (p.state == Product.STATE_PROCESSING && now - p.stateUpdated > 60000) // longer than 1 minute - reset processing state
         p.setState(Product.STATE_OPEN);
 
     L.i("billingClient init..");
@@ -147,6 +148,7 @@ public class InAppsProductsManager implements PurchasesUpdatedListener, Acknowle
                 p.sku = sku;
                 L.i("onSDR, product found by id, p:");
                 L.i(p);
+                productDetailsUpdated = true;
               }
               else
                 L.w("onSDR, product NOT found by id: " + sku.getSku());
