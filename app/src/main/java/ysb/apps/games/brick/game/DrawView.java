@@ -251,38 +251,46 @@ public class DrawView extends View
   protected void onDraw(Canvas canvas)
   {
 //    L.i("onDraw");
-    if (bounds == null)
-      initialize(canvas);
 
-    canvas.drawColor(Color.BLACK);
-    int bx = bounds.width() > bgs[0].getWidth() ? (bounds.width() - bgs[0].getWidth()) / 2 : 0;
-    int by = cupRect.height() > bgs[0].getHeight() ? (cupRect.height() - bgs[0].getHeight()) / 2 : (bgs[0].getHeight() - cupRect.height() < 300 ? 20 : 0);
-    int ii = game.state <= Game.STATE_PAUSED ? game.state : (game.state == Game.STATE_OPTIONS ? 3 : 1);
-    if (game.state != Game.STATE_LOGS)
-      canvas.drawBitmap(bgs[ii], bx, by, paints.cupContents);
-
-    if (game.state == Game.STATE_NOT_STARTED)
-      drawStartPage(canvas);
-    else if (game.state == Game.STATE_OPTIONS)
-      drawOptionsPage(canvas);
-    else if (game.state == Game.STATE_LOGS)
-      drawLogs(canvas);
-    else    // game in progress
+    try
     {
-      drawGameControls(canvas);
-      drawCup(canvas);
-      drawGameInfo(canvas);
+      if (bounds == null)
+        initialize(canvas);
 
-      if (game.state == Game.STATE_GAME)
+      canvas.drawColor(Color.BLACK);
+      int bx = bounds.width() > bgs[0].getWidth() ? (bounds.width() - bgs[0].getWidth()) / 2 : 0;
+      int by = cupRect.height() > bgs[0].getHeight() ? (cupRect.height() - bgs[0].getHeight()) / 2 : (bgs[0].getHeight() - cupRect.height() < 300 ? 20 : 0);
+      int ii = game.state <= Game.STATE_PAUSED ? game.state : (game.state == Game.STATE_OPTIONS ? 3 : 1);
+      if (game.state != Game.STATE_LOGS)
+        canvas.drawBitmap(bgs[ii], bx, by, paints.cupContents);
+
+      if (game.state == Game.STATE_NOT_STARTED)
+        drawStartPage(canvas);
+      else if (game.state == Game.STATE_OPTIONS)
+        drawOptionsPage(canvas);
+      else if (game.state == Game.STATE_LOGS)
+        drawLogs(canvas);
+      else    // game in progress
       {
-        game.needHelp(helpActions);
-        syncAnimations();
-//        L.i(animations);
-        for (Animation animation : animations.values())
-          animation.draw(canvas);
+        drawGameControls(canvas);
+        drawCup(canvas);
+        drawGameInfo(canvas);
+
+        if (game.state == Game.STATE_GAME)
+        {
+          game.needHelp(helpActions);
+          syncAnimations();
+  //        L.i(animations);
+          for (Animation animation : animations.values())
+            animation.draw(canvas);
+        }
+        else if (game.state == Game.STATE_DROPPING && animations.size() > 0)
+          animations.clear();
       }
-      else if (game.state == Game.STATE_DROPPING && animations.size() > 0)
-        animations.clear();
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
     }
 
 //    canvas.drawRect(cupRect.right, cupRect.top - 100, bounds.right, cupRect.top, paints.debugLine);
